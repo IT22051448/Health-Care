@@ -1,18 +1,17 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import AuthLayout from "./layouts/auth/layout";
 import AuthLogin from "./pages/auth/login";
 import AuthSignup from "./pages/auth/signup";
 import AdminLayout from "./layouts/admin/layout";
 import AdminDashboard from "./pages/admin/dashboard/dashboard";
-import AdminProducts from "./pages/admin/products/products";
-import AdminOrders from "./pages/admin/orders/orders";
+
 import NotFound from "./pages/not-found/notfound";
 import CustomerLayout from "./layouts/customer/layout";
 import ShoppingHome from "./pages/customer/home/home";
+import Profile from "./pages/customer/profile/profile";
 import UnAuthPage from "./pages/unauth-page";
 import CheckAuth from "./components/common/check-auth";
 import { useSelector } from "react-redux";
-import ShoppingCheckout from "./pages/customer/checkout/checkout";
 
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -22,6 +21,7 @@ function App() {
   return (
     <>
       <Routes>
+        <Route path="/" element={<CheckAuth />} />
         <Route
           path="/auth"
           element={
@@ -43,12 +43,10 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
         </Route>
 
         <Route
-          path="/shop"
+          path="/patient"
           element={
             <CheckAuth user={user} isAuthenticated={isAuthenticated}>
               <CustomerLayout />
@@ -56,7 +54,8 @@ function App() {
           }
         >
           <Route path="home" element={<ShoppingHome />} />
-          <Route path="checkout" element={<ShoppingCheckout />} />
+
+          <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />

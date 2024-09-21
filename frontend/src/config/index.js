@@ -122,3 +122,31 @@ export const addProductFormElements = [
     placeholder: "Enter total stock",
   },
 ];
+
+export const shopHeaderLinks = [
+  {
+    id: "home",
+    label: "Home",
+    path: "/patient/home",
+  },
+  {
+    id: "bookappointments",
+    label: "Book Appointments",
+    path: "/patient/appointment",
+  },
+  {
+    id: "healthpackage",
+    label: "Health Check Pakages",
+    path: "/patient/health-package",
+  },
+  {
+    id: "aboutus",
+    label: "About Us",
+    path: "/patient/about-us",
+  },
+  {
+    id: "contactus",
+    label: "Contact Us",
+    path: "/patient/contact-us",
+  },
+];

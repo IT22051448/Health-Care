@@ -13,38 +13,45 @@ const authController = {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const userNameExists = await User.findOne({
-        username: req.body.username,
-      });
+      const {
+        username,
+        firstname,
+        lastname,
+        email,
+        password,
+        role,
+        avatar,
+        contact,
+      } = req.body;
+
+      // Check if username or email already exists
+      const userNameExists = await User.findOne({ username });
       if (userNameExists) {
         return res
           .status(400)
           .json({ message: "Username already exists", success: false });
       }
 
-      const userExists = await User.findOne({ email: req.body.email });
+      const userExists = await User.findOne({ email });
       if (userExists) {
         return res
           .status(400)
           .json({ message: "User already exists", success: false });
       }
 
+      // Hash the password
       const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
       const user = new User({
-        username: req.body.username,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        email: req.body.email,
+        username,
+        firstname,
+        lastname,
+        email,
         password: hashedPassword,
-        role: req.body.role,
-        avatar: req.body.avatar,
-        contact: req.body.contact,
-        address: req.body.address,
-        city: req.body.city,
-        postalCode: req.body.postalCode,
-        country: req.body.country,
+        role,
+        avatar,
+        contact,
         created_date: new Date(),
         last_login: new Date(),
       });
@@ -127,6 +134,18 @@ const authController = {
     } catch (error) {
       logger.error(error.message);
       res.status(500).json({ sucess: false, message: "Internal server error" });
+    }
+  },
+
+  async logout(req, res) {
+    try {
+      // Clear the authentication token or session cookie
+      res.clearCookie("token");
+
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+      logger.error("Logout error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
 };

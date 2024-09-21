@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const Schema = mongoose.Schema;
 
 // define an user schema for a typical ecommerce customer and backend staff user
 const userSchema = new mongoose.Schema({
@@ -33,22 +34,11 @@ const userSchema = new mongoose.Schema({
   contact: {
     type: String,
   },
-  address: {
-    type: String,
-  },
-  city: {
-    type: String,
-  },
-  postalCode: {
-    type: String,
-  },
-  country: {
-    type: String,
-  },
   created_date: {
     type: Date,
     required: true,
   },
+
   last_login: {
     type: Date,
   },

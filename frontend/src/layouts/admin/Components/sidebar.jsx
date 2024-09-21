@@ -16,25 +16,29 @@ const AdminSidebar = ({ open, setOpen }) => {
   return (
     <Fragment>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-64">
+        <SheetContent side="left" className="w-64 bg-blue-500">
           <div className="flex flex-col h-full">
             <SheetHeader className="border-b">
               <SheetTitle className="flex gap-2 mt-5 mb-5">
                 <ChartNoAxesCombined size={30} />
-                <h1 className="text-xl font-extrabold">Admin Panel</h1>
+                <h1 className="text-xl font-extrabold">
+                  Smart Health Care System
+                </h1>
               </SheetTitle>
             </SheetHeader>
             <MenuItems setOpen={setOpen} navigate={navigate} />
           </div>
         </SheetContent>
       </Sheet>
-      <aside className="hidden w-64 flex-col border-r bg-background p-6 lg:flex">
+      <aside className="hidden w-64 flex-col border-r bg-blue-400 p-6 lg:flex rounded-r-3xl">
         <div
           onClick={() => navigate("/admin/dashboard")}
           className="flex cursor-pointer items-center gap-2"
         >
           <ChartNoAxesCombined size={30} />
-          <h1 className="text-xl font-extrabold">Admin Panel</h1>
+          <h1 className="text-lg font-extrabold text-white ">
+            Smart Health Care System
+          </h1>
         </div>
         <MenuItems navigate={navigate} />
       </aside>

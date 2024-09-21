@@ -12,16 +12,23 @@ const initialState = {
 
 const AuthLogin = () => {
   const [formData, setFormData] = useState(initialState);
-
   const dispatch = useDispatch();
 
   function onSubmit(event) {
     event.preventDefault();
     console.log(formData);
 
-    dispatch(loginUser(formData)).then((data) => {
-      console.log(data);
-    });
+    dispatch(loginUser(formData))
+      .then((result) => {
+        if (result.type === "auth/login/fulfilled") {
+          console.log("Login successful", result.payload.user);
+        } else {
+          console.error("Login failed");
+        }
+      })
+      .catch(() => {
+        console.error("Login failed");
+      });
   }
 
   return (
@@ -36,13 +43,13 @@ const AuthLogin = () => {
             className="font-medium ml-2 text-primary hover:underline"
             to="/auth/signup"
           >
-            Signup
+            Sign Up
           </Link>
         </p>
       </div>
       <CommonForm
         formControls={loginFormControls}
-        buttonText={"Sign Up"}
+        buttonText={"Sign In"}
         formData={formData}
         setFormData={setFormData}
         onSubmit={onSubmit}
