@@ -13,6 +13,8 @@ import UnAuthPage from "./pages/unauth-page";
 import CheckAuth from "./components/common/check-auth";
 import { useSelector } from "react-redux";
 
+import BookAppointments from "./pages/customer/appointments/BookAppointments";
+
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -54,8 +56,8 @@ function App() {
           }
         >
           <Route path="home" element={<ShoppingHome />} />
-
           <Route path="profile" element={<Profile />} />
+          <Route path="appointment" element={<BookAppointments />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />
