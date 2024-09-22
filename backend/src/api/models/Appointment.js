@@ -1,37 +1,76 @@
-//Appointment Database inserted information for User
-
 import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema({
   hospital: {
     type: String,
-    enum: ["government", "private"],
+    required: true,
+  },
+  isGovernment: {
+    type: Boolean,
     required: true,
   },
   service: {
     type: String,
     required: true,
   },
-  doctorName: {
+  doctor: {
     type: String,
     required: true,
   },
-  appointmentDates: [
-    {
-      date: { type: Date, required: true },
-      time: { type: String, required: true },
-    },
-  ],
-  patient: {
-    name: { type: String, required: true },
-    age: { type: Number, required: true },
-    gender: {
+  patientDetails: {
+    fullName: {
       type: String,
-      enum: ["male", "female", "other"],
       required: true,
     },
-    description: { type: String, required: true },
+    age: {
+      type: Number,
+      required: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: false,
+    },
+  },
+  appointments: [
+    {
+      date: {
+        type: Date,
+        required: true,
+      },
+      time: {
+        type: [String],
+        required: true,
+      },
+    },
+  ],
+  payment: {
+    amount: {
+      type: Number,
+      required: function () {
+        return !this.isGovernment; // Only required if not a government hospital
+      },
+    },
+    method: {
+      type: String,
+      enum: ["Card Payment", "Cash", "Insurance Coverage"],
+      required: function () {
+        return !this.isGovernment; // Only required if not a government hospital
+      },
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed", "Failed"],
+      default: function () {
+        return this.isGovernment ? "Completed" : "Pending"; // Completed if government
+      },
+    },
   },
 });
 
-export default mongoose.model("Appointment", appointmentSchema);
+const Appointment = mongoose.model("Appointment", appointmentSchema);
+
+export default Appointment;

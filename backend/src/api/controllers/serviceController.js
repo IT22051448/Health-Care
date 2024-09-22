@@ -76,3 +76,20 @@ export const deleteService = async (req, res) => {
       .json({ message: "Error deleting service", error: error.message });
   }
 };
+
+// Fetch a service by name
+export const getServiceByName = async (req, res) => {
+  try {
+    const serviceName = req.params.name;
+    const service = await Service.findOne({ name: serviceName });
+
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    res.status(200).json(service);
+  } catch (error) {
+    console.error("Error fetching service by name:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

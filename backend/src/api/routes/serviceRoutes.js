@@ -5,6 +5,7 @@ import {
   getServiceById,
   updateService,
   deleteService,
+  getServiceByName,
 } from "../controllers/serviceController";
 
 const router = express.Router();
@@ -23,5 +24,8 @@ router.put("/update-service/:id", updateService);
 
 // Delete a service
 router.delete("/delete-service/:id", deleteService);
+
+// Get a service by name
+router.get("/get-service-by-name/:name", getServiceByName);
 
 export default router;

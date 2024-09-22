@@ -1,62 +1,45 @@
 import Appointment from "../models/Appointment.js";
 
-//Create an Appointment
+// Create a new appointment
 export const createAppointment = async (req, res) => {
   try {
-    const appointmentData = req.body;
-    const appointment = new Appointment(appointmentData);
-    await appointment.save();
-    res
-      .status(201)
-      .json({ message: "Appointment created successfully", appointment });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
+    const {
+      hospital,
+      isGovernment,
+      service,
+      doctor,
+      patientDetails,
+      appointments,
+    } = req.body;
 
-// Get All appointments
-export const getAppointments = async (req, res) => {
-  try {
-    const appointments = await Appointment.find();
-    res.status(200).json(appointments);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Update One Appointment
-export const updateAppointment = async (req, res) => {
-  const { id } = req.params;
-  const appointmentData = req.body;
-
-  try {
-    const appointment = await Appointment.findByIdAndUpdate(
-      id,
-      appointmentData,
-      { new: true, runValidators: true }
-    );
-    if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+    // Prepare payment details based on hospital type
+    const payment = {};
+    if (!isGovernment) {
+      payment.amount = req.body.payment.amount; // Get amount from request body
+      payment.method = req.body.payment.method; // Get payment method from request body
+      payment.status = "Pending"; // Default status for private hospitals
+    } else {
+      payment.status = "Completed"; // Default status for government hospitals
     }
+
+    const newAppointment = new Appointment({
+      hospital,
+      isGovernment,
+      service,
+      doctor,
+      patientDetails,
+      appointments,
+      payment,
+    });
+
+    await newAppointment.save();
+    res.status(201).json({
+      message: "Appointment created successfully",
+      data: newAppointment,
+    });
+  } catch (error) {
     res
-      .status(200)
-      .json({ message: "Appointment updated successfully", appointment });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Delete One Appointment
-export const deleteAppointment = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const appointment = await Appointment.findByIdAndDelete(id);
-    if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
-    }
-    res.status(200).json({ message: "Appointment deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+      .status(400)
+      .json({ message: "Error creating appointment", error: error.message });
   }
 };

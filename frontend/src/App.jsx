@@ -14,6 +14,8 @@ import CheckAuth from "./components/common/check-auth";
 import { useSelector } from "react-redux";
 
 import BookAppointments from "./pages/customer/appointments/BookAppointments";
+import AppointmentSummary from "./pages/customer/appointments/AppointmentSummery";
+import ScheduleDoctorAppointments from "./pages/admin/Appointments/ScheduleDoctorAppointments";
 
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -45,6 +47,10 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route
+            path="doc-appointment"
+            element={<ScheduleDoctorAppointments />}
+          />
         </Route>
 
         <Route
@@ -58,6 +64,7 @@ function App() {
           <Route path="home" element={<ShoppingHome />} />
           <Route path="profile" element={<Profile />} />
           <Route path="appointment" element={<BookAppointments />} />
+          <Route path="appointment-summary" element={<AppointmentSummary />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />
