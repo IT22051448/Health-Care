@@ -98,7 +98,6 @@ const BookAppointments = () => {
         ?.hospitalType === "Government";
 
     if (!isGovernment && selectedService) {
-      // Fetch the service amount by name
       try {
         const response = await axios.get(
           `http://localhost:5000/api/service/get-service-by-name/${selectedService}`
@@ -119,11 +118,12 @@ const BookAppointments = () => {
       serviceAmount,
     };
 
-    console.log("Appointment Data:", appointmentData); // Debugging log
+    console.log("Appointment Data:", appointmentData);
 
-    // Navigate to AppointmentSummary with appointment data
+    // Navigate to the appointment summary page and pass data
     navigate("/patient/appointment-summary", { state: appointmentData });
   };
+
   const resetForm = () => {
     setSelectedAppointments([]);
     setSelectedHospital("");

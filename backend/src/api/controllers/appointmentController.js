@@ -10,18 +10,30 @@ export const createAppointment = async (req, res) => {
       doctor,
       patientDetails,
       appointments,
+      payment: { amount, method } = {}, // Destructure payment details from request body
     } = req.body;
 
     // Prepare payment details based on hospital type
     const payment = {};
+
     if (!isGovernment) {
-      payment.amount = req.body.payment.amount; // Get amount from request body
-      payment.method = req.body.payment.method; // Get payment method from request body
-      payment.status = "Pending"; // Default status for private hospitals
+      // Ensure payment details are provided for private hospitals
+      if (!amount || !method) {
+        return res.status(400).json({
+          message:
+            "Payment amount and method are required for private hospitals.",
+        });
+      }
+
+      payment.amount = amount;
+      payment.method = method;
+      payment.status = method === "Card Payment" ? "Completed" : "Pending"; // Default to "Pending" for cash, "Completed" for others
     } else {
-      payment.status = "Completed"; // Default status for government hospitals
+      payment.amount = 0; // No charge for government hospitals
+      payment.status = "Completed"; // Automatically mark payment as completed
     }
 
+    // Create a new appointment document
     const newAppointment = new Appointment({
       hospital,
       isGovernment,
@@ -32,12 +44,16 @@ export const createAppointment = async (req, res) => {
       payment,
     });
 
+    // Save the new appointment to the database
     await newAppointment.save();
+
+    // Send success response
     res.status(201).json({
       message: "Appointment created successfully",
       data: newAppointment,
     });
   } catch (error) {
+    // Error handling
     res
       .status(400)
       .json({ message: "Error creating appointment", error: error.message });

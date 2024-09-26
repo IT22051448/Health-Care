@@ -56,7 +56,7 @@ const appointmentSchema = new mongoose.Schema({
     },
     method: {
       type: String,
-      enum: ["Card Payment", "Cash", "Insurance Coverage"],
+      enum: ["Card Payment", "Cash", "Insurance"],
       required: function () {
         return !this.isGovernment; // Only required if not a government hospital
       },
