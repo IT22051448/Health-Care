@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import BookAppointments from "./pages/customer/appointments/BookAppointments";
 import AppointmentSummary from "./pages/customer/appointments/AppointmentSummery";
 import ScheduleDoctorAppointments from "./pages/admin/Appointments/ScheduleDoctorAppointments";
+import ScheduledAppointments from "./pages/customer/appointments/ScheduledAppointments";
 
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -65,6 +66,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="appointment" element={<BookAppointments />} />
           <Route path="appointment-summary" element={<AppointmentSummary />} />
+          <Route path="scheduled-appoint" element={<ScheduledAppointments />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />

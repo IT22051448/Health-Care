@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import AppointmentModal from "../../../components/appointComponents/AppointmentModal";
 
 const BookAppointments = () => {
-  const navigate = useNavigate(); // Create a navigate function
+  const navigate = useNavigate();
   const [hospitals, setHospitals] = useState([]);
   const [servicesData, setServicesData] = useState([]);
   const [selectedHospital, setSelectedHospital] = useState("");
@@ -20,7 +21,9 @@ const BookAppointments = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch hospitals and services data
+  // Fetch user email from Redux store
+  const userEmail = useSelector((state) => state.auth.user?.email);
+
   useEffect(() => {
     const fetchHospitals = async () => {
       const response = await axios.get(
@@ -116,6 +119,7 @@ const BookAppointments = () => {
       appointments: selectedAppointments,
       isGovernment,
       serviceAmount,
+      userEmail: userEmail || "", // Default to empty string if undefined
     };
 
     console.log("Appointment Data:", appointmentData);

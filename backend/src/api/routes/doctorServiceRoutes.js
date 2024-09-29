@@ -5,6 +5,7 @@ import {
   getServiceById,
   updateService,
   deleteService,
+  getAvailableDates,
 } from "../controllers/doctorServiceController.js";
 
 const router = express.Router();
@@ -23,5 +24,8 @@ router.put("/update-service/:id", updateService);
 
 // Delete a service
 router.delete("/delete-service/:id", deleteService);
+
+// New route for getting available dates
+router.get("/get-available-dates", getAvailableDates);
 
 export default router;

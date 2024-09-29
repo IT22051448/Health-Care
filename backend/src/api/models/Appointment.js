@@ -69,6 +69,10 @@ const appointmentSchema = new mongoose.Schema({
       },
     },
   },
+  userEmail: {
+    type: String,
+    required: true,
+  },
 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
