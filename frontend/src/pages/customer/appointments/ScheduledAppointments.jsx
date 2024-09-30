@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useSelector } from "react-redux";
 import RescheduleModal from "@/components/appointComponents/RescheduleModal";
+import axios from "axios";
 
 const ScheduledAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedSubAppointment, setSelectedSubAppointment] = useState(null);
   const userEmail = useSelector((state) => state.auth.user?.email);
 
   useEffect(() => {
@@ -47,35 +49,81 @@ const ScheduledAppointments = () => {
     fetchAppointments();
   }, [userEmail]);
 
-  const handleReschedule = (appointment) => {
+  const handleReschedule = (appointment, subAppointment) => {
+    console.log("Selected Appointment ID:", appointment._id);
+    console.log("Selected Sub-Appointment ID:", subAppointment._id);
     setSelectedAppointment(appointment);
+    setSelectedSubAppointment({
+      _id: subAppointment._id,
+      appointmentId: appointment._id, // Include appointmentId here
+    });
     setIsModalOpen(true);
   };
 
-  const confirmReschedule = async (newDate, newTimes) => {
-    const formattedDate = newDate.split("/").reverse().join("-"); // Convert dd/mm/yyyy to yyyy-mm-dd
-    const updatedAppointments = appointments.map((appt) => {
-      if (appt._id === selectedAppointment._id) {
-        return {
-          ...appt,
-          appointments: appt.appointments.map((a) => {
-            if (a.date === selectedAppointment.appointments[0].date) {
-              return { ...a, date: formattedDate, time: newTimes };
-            }
-            return a;
-          }),
-        };
-      }
-      return appt;
-    });
+  const handleCancel = (subAppointment) => {
+    alert("Cancel button clicked for appointment ID: " + subAppointment._id);
+    // Add logic here to cancel the appointment through API if needed
+  };
 
-    setAppointments(updatedAppointments);
-    console.log("Rescheduled appointments:", updatedAppointments);
-    toast({
-      title: "Success",
-      description: "Appointment rescheduled!",
-      type: "success",
-    });
+  const confirmReschedule = async (newDate, newTimes) => {
+    try {
+      const formattedDate = newDate.split("/").reverse().join("-");
+
+      // Construct the appointment and sub-appointment IDs
+      const appointmentId = selectedAppointment._id;
+      const subAppointmentId = selectedSubAppointment._id;
+
+      // Make the API call to the new endpoint
+      const response = await axios.put(
+        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
+        {
+          newDate: formattedDate, // e.g., "2024-10-05"
+          newTimes: newTimes[0], // Use the first selected time if only one is needed
+        }
+      );
+
+      if (response.status === 200) {
+        const updatedAppointments = appointments.map((appt) => {
+          if (appt._id === selectedAppointment._id) {
+            return {
+              ...appt,
+              appointments: appt.appointments.map((subAppt) => {
+                if (subAppt._id === selectedSubAppointment._id) {
+                  return {
+                    ...subAppt,
+                    date: formattedDate, // Update the date here
+                    time: [newTimes[0]], // Update the time here
+                  };
+                }
+                return subAppt;
+              }),
+            };
+          }
+          return appt;
+        });
+
+        setAppointments(updatedAppointments);
+        toast({
+          title: "Success",
+          description: "Appointment rescheduled!",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to reschedule appointment.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error rescheduling appointment:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while rescheduling appointment.",
+        type: "error",
+      });
+    }
+    setIsModalOpen(false);
   };
 
   return (
@@ -106,43 +154,45 @@ const ScheduledAppointments = () => {
               </p>
 
               {appointment.appointments.map((appt) => (
-                <div key={appt._id} className="mb-2">
+                <div key={appt._id} className="mb-4 border p-2 rounded">
                   <p className="text-gray-700 mb-1">
                     <strong>Date:</strong>{" "}
                     {new Date(appt.date).toLocaleDateString("en-GB")} -{" "}
                     {appt.time.join(", ")}
                   </p>
+                  <div className="flex justify-between mt-4">
+                    <button
+                      className="bg-red-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-red-700 transition duration-200 shadow mr-2"
+                      onClick={() => handleCancel(appt)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow"
+                      onClick={() => handleReschedule(appointment, appt)}
+                    >
+                      Reschedule
+                    </button>
+                  </div>
                 </div>
               ))}
-
-              <div className="flex justify-between">
-                <button
-                  className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200 shadow"
-                  // Add your cancel logic here
-                >
-                  Cancel
-                </button>
-                <button
-                  className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200 shadow"
-                  onClick={() => handleReschedule(appointment)}
-                >
-                  Reschedule
-                </button>
-              </div>
             </div>
           ))
         )}
       </div>
 
-      <RescheduleModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedAppointment={selectedAppointment}
-        onReschedule={confirmReschedule}
-        doctorName={selectedAppointment?.doctor}
-        hospitalName={selectedAppointment?.hospital}
-        serviceType={selectedAppointment?.service}
-      />
+      {selectedAppointment && selectedSubAppointment && (
+        <RescheduleModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedAppointment={selectedAppointment}
+          selectedSubAppointment={selectedSubAppointment}
+          onReschedule={confirmReschedule}
+          doctorName={selectedAppointment.doctor}
+          hospitalName={selectedAppointment.hospital}
+          serviceType={selectedAppointment.service}
+        />
+      )}
     </div>
   );
 };

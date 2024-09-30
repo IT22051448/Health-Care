@@ -153,9 +153,14 @@ const BookAppointments = () => {
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) => service.services.map((serv) => serv.serviceType));
 
+  // Filter doctors based on selected hospital and service
   const filteredDoctors = servicesData
     .filter((service) => service.hospitalName === selectedHospital)
-    .map((service) => service.doctorName);
+    .flatMap((service) =>
+      service.services
+        .filter((serv) => serv.serviceType === selectedService)
+        .map((serv) => service.doctorName)
+    );
 
   return (
     <div className="bg-blue-400">

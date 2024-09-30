@@ -8,12 +8,12 @@ const RescheduleModal = ({
   doctorName,
   hospitalName,
   serviceType,
-  selectedAppointment,
+  selectedSubAppointment,
 }) => {
   const [availableDates, setAvailableDates] = useState([]);
   const [filteredDates, setFilteredDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTimes, setSelectedTimes] = useState([]);
+  const [selectedTime, setSelectedTime] = useState(""); // Change to single selected time
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -53,68 +53,90 @@ const RescheduleModal = ({
     }
   };
 
-  const handleSubmit = () => {
-    if (!selectedDate || selectedTimes.length === 0) {
-      setError("Please select a date and at least one time.");
+  const handleSubmit = async () => {
+    if (!selectedDate || !selectedTime) {
+      setError("Please select a date and a time.");
       return;
     }
 
-    const formattedDate = selectedDate.split("/").reverse().join("-"); // Convert dd/mm/yyyy to yyyy-mm-dd
-    setError("");
-    onReschedule(formattedDate, selectedTimes);
-    onClose();
+    // Convert DD/MM/YYYY to YYYY-MM-DD
+    const dateParts = selectedDate.split("/");
+    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Change to YYYY-MM-DD
+
+    try {
+      const { _id: subAppointmentId, appointmentId } = selectedSubAppointment;
+
+      // Log to debug
+      console.log("Rescheduling:", {
+        subAppointmentId,
+        appointmentId,
+        formattedDate,
+        newTimes: selectedTime, // Use the selected time directly
+      });
+
+      await axios.put(
+        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
+        {
+          newDate: formattedDate, // e.g., "2024-10-05"
+          newTimes: selectedTime, // Use the selected time
+        }
+      );
+
+      setError("");
+      onReschedule(formattedDate, selectedTime);
+    } catch (error) {
+      console.error(
+        "Error rescheduling appointment:",
+        error.response ? error.response.data : error.message
+      );
+      setError("Error rescheduling appointment. Please try again.");
+    }
   };
 
   return (
     open && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold text-[#6F93D9] mb-4">
-            Reschedule Appointment
-          </h2>
-
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-
-          <h3 className="text-lg font-semibold mb-2">Select a new date:</h3>
-          <select
-            value={selectedDate}
-            onChange={(e) => {
-              const newDate = e.target.value;
-              setSelectedDate(newDate);
-              setSelectedTimes([]); // Reset selected times when date changes
-            }}
-            className="border border-gray-300 rounded-md p-2 w-full mb-4"
-          >
-            <option value="">Select Date</option>
-            {filteredDates.length > 0 ? (
-              filteredDates.map(({ date }) => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>
-                No dates available
-              </option>
-            )}
-          </select>
-
-          {selectedDate && filteredDates.length > 0 && (
-            <div>
-              <h4 className="font-semibold mb-2">Available Times:</h4>
+      <div className="fixed z-50 inset-0 bg-black bg-opacity-30 flex justify-center items-center">
+        <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+          <h2 className="text-2xl font-bold mb-4">Reschedule Appointment</h2>
+          {error && <p className="text-red-500">{error}</p>}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Select Date:</h3>
+            <div className="flex flex-wrap">
+              {filteredDates.map((dateObj) => (
+                <div key={dateObj.date} className="mb-2 mr-2">
+                  <div
+                    className={`p-2 rounded-lg cursor-pointer border-2 ${
+                      selectedDate === dateObj.date
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 border-gray-300"
+                    }`}
+                    onClick={() => {
+                      setSelectedDate(dateObj.date);
+                      setSelectedTime(""); // Reset time on new date selection
+                    }}
+                  >
+                    {dateObj.date}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {selectedDate && (
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Select Time:</h4>
               <div className="flex flex-wrap">
                 {filteredDates
                   .find((dateObj) => dateObj.date === selectedDate)
                   ?.times.map((time) => (
                     <button
                       key={time}
-                      className={`p-2 rounded border ml-0 m-2 ${
-                        selectedTimes.includes(time)
+                      className={`p-2 rounded border-2 ml-0 m-2 ${
+                        selectedTime === time // Change to single selected time
                           ? "bg-blue-500 text-white"
                           : "bg-gray-200"
                       }`}
                       onClick={() => {
-                        setSelectedTimes([time]);
+                        setSelectedTime(time); // Set selected time directly
                       }}
                     >
                       {time}
@@ -123,16 +145,15 @@ const RescheduleModal = ({
               </div>
             </div>
           )}
-
-          <div className="mt-6 flex justify-end">
+          <div className="flex justify-end mt-6">
             <button
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
               onClick={handleSubmit}
             >
-              Confirm Reschedule
+              Reschedule
             </button>
             <button
-              className="ml-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+              className="bg-gray-400 text-white font-bold py-2 px-4 rounded hover:bg-gray-500 ml-2"
               onClick={onClose}
             >
               Cancel
