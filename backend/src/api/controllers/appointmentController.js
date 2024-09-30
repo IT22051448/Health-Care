@@ -96,41 +96,80 @@ export const getAppointmentsByEmail = async (req, res) => {
 // Update an existing appointment's specific date and time
 export const updateAppointmentDateTime = async (req, res) => {
   try {
-    const { id, appointmentId } = req.params; // Main document ID and the specific appointment ID from the URL
-    const { newDate, newTimes } = req.body; // New date and time from the request body
+    const { id, appointmentId } = req.params;
+    const { newDate, newTimes } = req.body;
 
     // Validate inputs
-    if (!newDate || !newTimes || newTimes.length === 0) {
+    if (!newDate || !newTimes || typeof newTimes !== "string") {
       return res.status(400).json({
         message: "New date and time are required.",
       });
     }
 
-    // Find the main document (appointment) and update the specific appointment by its ID
     const updatedAppointment = await Appointment.findOneAndUpdate(
-      { _id: id, "appointments._id": appointmentId }, // Find the document and the specific appointment within the array
+      { _id: id, "appointments._id": appointmentId },
       {
         $set: {
-          "appointments.$.date": new Date(newDate), // Update the date for the matched appointment
-          "appointments.$.time": newTimes, // Update the time for the matched appointment
+          "appointments.$.date": new Date(newDate),
+          "appointments.$.time": [newTimes], // Ensure newTimes is wrapped in an array
         },
       },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!updatedAppointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    // Return success response with updated appointment details
     res.status(200).json({
       message: "Appointment rescheduled successfully",
       data: updatedAppointment,
     });
   } catch (error) {
-    // Error handling
     res.status(500).json({
       message: "Error updating appointment",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel a specific appointment
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { id, appointmentId } = req.params; // Extract main document ID and specific appointment ID from the URL
+
+    // Find the appointment by ID
+    const appointment = await Appointment.findById(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Filter out the appointment to be cancelled
+    const remainingAppointments = appointment.appointments.filter(
+      appt => appt._id.toString() !== appointmentId
+    );
+
+    if (remainingAppointments.length > 0) {
+      // Update the main appointment document with the remaining appointments
+      appointment.appointments = remainingAppointments;
+      await appointment.save(); // Save the updated appointment document
+      return res.status(200).json({
+        message: "Appointment cancelled successfully",
+        data: appointment,
+      });
+    } else {
+      // If no remaining appointments, remove the entire appointment document
+      await Appointment.findByIdAndDelete(id);
+      return res.status(200).json({
+        message:
+          "All appointments cancelled successfully, main record removed.",
+      });
+    }
+  } catch (error) {
+    // Error handling
+    res.status(500).json({
+      message: "Error cancelling appointment",
       error: error.message,
     });
   }

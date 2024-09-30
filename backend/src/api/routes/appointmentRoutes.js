@@ -3,6 +3,7 @@ import {
   createAppointment,
   getAppointmentsByEmail,
   updateAppointmentDateTime,
+  cancelAppointment,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -18,5 +19,8 @@ router.put(
   "/reschedule-appointment/:id/:appointmentId",
   updateAppointmentDateTime
 );
+
+// Cancel an appointment
+router.delete("/cancel-appointment/:id/:appointmentId", cancelAppointment);
 
 export default router;

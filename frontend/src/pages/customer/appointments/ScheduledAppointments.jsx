@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useSelector } from "react-redux";
 import RescheduleModal from "@/components/appointComponents/RescheduleModal";
+import CancellationModal from "@/components/appointComponents/CancellationModal";
 import axios from "axios";
 
 const ScheduledAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedSubAppointment, setSelectedSubAppointment] = useState(null);
   const userEmail = useSelector((state) => state.auth.user?.email);
@@ -50,8 +52,6 @@ const ScheduledAppointments = () => {
   }, [userEmail]);
 
   const handleReschedule = (appointment, subAppointment) => {
-    console.log("Selected Appointment ID:", appointment._id);
-    console.log("Selected Sub-Appointment ID:", subAppointment._id);
     setSelectedAppointment(appointment);
     setSelectedSubAppointment({
       _id: subAppointment._id,
@@ -61,8 +61,8 @@ const ScheduledAppointments = () => {
   };
 
   const handleCancel = (subAppointment) => {
-    alert("Cancel button clicked for appointment ID: " + subAppointment._id);
-    // Add logic here to cancel the appointment through API if needed
+    setSelectedSubAppointment(subAppointment);
+    setIsCancellationModalOpen(true); // Open the cancellation modal
   };
 
   const confirmReschedule = async (newDate, newTimes) => {
@@ -78,7 +78,7 @@ const ScheduledAppointments = () => {
         `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
         {
           newDate: formattedDate, // e.g., "2024-10-05"
-          newTimes: newTimes[0], // Use the first selected time if only one is needed
+          newTimes: newTimes, // Use the first selected time if only one is needed
         }
       );
 
@@ -92,7 +92,7 @@ const ScheduledAppointments = () => {
                   return {
                     ...subAppt,
                     date: formattedDate, // Update the date here
-                    time: [newTimes[0]], // Update the time here
+                    time: [newTimes], // Update the time here
                   };
                 }
                 return subAppt;
@@ -124,6 +124,54 @@ const ScheduledAppointments = () => {
       });
     }
     setIsModalOpen(false);
+  };
+
+  const confirmCancellation = async (reason, description) => {
+    try {
+      const appointmentId = selectedSubAppointment.appointmentId;
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}`,
+        {
+          data: { reason, description },
+        }
+      );
+
+      if (response.status === 200) {
+        // Update the appointments state by filtering out the cancelled appointment
+        const updatedAppointments = appointments
+          .map((appt) => {
+            return {
+              ...appt,
+              appointments: appt.appointments.filter(
+                (subAppt) => subAppt._id !== selectedSubAppointment._id
+              ),
+            };
+          })
+          .filter((appt) => appt.appointments.length > 0); // Remove any appointment with no sub-appointments
+
+        setAppointments(updatedAppointments);
+        toast({
+          title: "Success",
+          description: "Appointment cancelled successfully!",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to cancel appointment.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while cancelling appointment.",
+        type: "error",
+      });
+    }
+    setIsCancellationModalOpen(false);
   };
 
   return (
@@ -191,6 +239,15 @@ const ScheduledAppointments = () => {
           doctorName={selectedAppointment.doctor}
           hospitalName={selectedAppointment.hospital}
           serviceType={selectedAppointment.service}
+        />
+      )}
+
+      {selectedSubAppointment && (
+        <CancellationModal
+          open={isCancellationModalOpen}
+          onClose={() => setIsCancellationModalOpen(false)}
+          onConfirm={confirmCancellation}
+          appointmentId={selectedSubAppointment.appointmentId}
         />
       )}
     </div>

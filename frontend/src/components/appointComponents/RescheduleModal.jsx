@@ -77,8 +77,8 @@ const RescheduleModal = ({
       await axios.put(
         `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
         {
-          newDate: formattedDate, // e.g., "2024-10-05"
-          newTimes: selectedTime, // Use the selected time
+          newDate: formattedDate,
+          newTimes: selectedTime,
         }
       );
 
