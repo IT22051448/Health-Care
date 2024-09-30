@@ -7,7 +7,7 @@ import AdminDashboard from "./pages/admin/dashboard/dashboard";
 
 import NotFound from "./pages/not-found/notfound";
 import CustomerLayout from "./layouts/customer/layout";
-import ShoppingHome from "./pages/customer/home/home";
+import PatientHome from "./pages/customer/home/home";
 import Profile from "./pages/customer/profile/profile";
 import UnAuthPage from "./pages/unauth-page";
 import CheckAuth from "./components/common/check-auth";
@@ -62,7 +62,7 @@ function App() {
             </CheckAuth>
           }
         >
-          <Route path="home" element={<ShoppingHome />} />
+          <Route path="home" element={<PatientHome />} />
           <Route path="profile" element={<Profile />} />
           <Route path="appointment" element={<BookAppointments />} />
           <Route path="appointment-summary" element={<AppointmentSummary />} />

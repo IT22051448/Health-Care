@@ -31,12 +31,6 @@ const ScheduledAppointments = () => {
         if (response.ok) {
           const data = await response.json();
           setAppointments(data);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load scheduled appointments.",
-            type: "error",
-          });
         }
       } catch (error) {
         console.error("Error fetching appointments:", error);
@@ -60,8 +54,11 @@ const ScheduledAppointments = () => {
     setIsModalOpen(true);
   };
 
-  const handleCancel = (subAppointment) => {
-    setSelectedSubAppointment(subAppointment);
+  const handleCancel = (appointment, subAppointment) => {
+    setSelectedSubAppointment({
+      ...subAppointment,
+      appointmentId: appointment._id, // Include appointmentId here
+    });
     setIsCancellationModalOpen(true); // Open the cancellation modal
   };
 
@@ -129,9 +126,11 @@ const ScheduledAppointments = () => {
   const confirmCancellation = async (reason, description) => {
     try {
       const appointmentId = selectedSubAppointment.appointmentId;
+      const subAppointmentId = selectedSubAppointment._id;
 
+      // Call the API to cancel the appointment
       const response = await axios.delete(
-        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}`,
+        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
         {
           data: { reason, description },
         }
@@ -200,6 +199,14 @@ const ScheduledAppointments = () => {
               <p className="text-gray-700 mb-1">
                 <strong>Service:</strong> {appointment.service}
               </p>
+              <p className="text-gray-700 mb-1">
+                <strong>Payment Method:</strong>{" "}
+                {appointment.payment?.method || "N/A"}
+              </p>
+              <p className="text-gray-700 mb-5">
+                <strong>Payment Status:</strong>{" "}
+                {appointment.payment?.status || "Pending"}
+              </p>
 
               {appointment.appointments.map((appt) => (
                 <div key={appt._id} className="mb-4 border p-2 rounded">
@@ -211,7 +218,7 @@ const ScheduledAppointments = () => {
                   <div className="flex justify-between mt-4">
                     <button
                       className="bg-red-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-red-700 transition duration-200 shadow mr-2"
-                      onClick={() => handleCancel(appt)}
+                      onClick={() => handleCancel(appointment, appt)}
                     >
                       Cancel
                     </button>

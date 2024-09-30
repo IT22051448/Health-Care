@@ -62,6 +62,7 @@ const CancellationModal = ({ open, onClose, onConfirm, appointmentId }) => {
           <button
             className="bg-green-500 text-white px-4 py-2 rounded mr-2"
             onClick={handleConfirm}
+            disabled={!selectedReason}
           >
             Confirm Cancellation
           </button>

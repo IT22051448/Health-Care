@@ -1,4 +1,6 @@
 import Appointment from "../models/Appointment.js";
+import CancelledAppointment from "../models/CancelledAppointment.js";
+import Service from "../models/Service.js";
 
 // Create a new appointment
 export const createAppointment = async (req, res) => {
@@ -135,42 +137,69 @@ export const updateAppointmentDateTime = async (req, res) => {
 
 // Cancel a specific appointment
 export const cancelAppointment = async (req, res) => {
-  try {
-    const { id, appointmentId } = req.params; // Extract main document ID and specific appointment ID from the URL
+  const { id, appointmentId } = req.params; // Extract main document ID and specific appointment ID from the URL
+  const { reason, description } = req.body; // Reason for cancellation and optional description
 
-    // Find the appointment by ID
+  try {
+    // Find the main appointment by ID
     const appointment = await Appointment.findById(id);
 
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+      return res.status(404).json({ message: "Main appointment not found." });
     }
 
-    // Filter out the appointment to be cancelled
-    const remainingAppointments = appointment.appointments.filter(
-      appt => appt._id.toString() !== appointmentId
-    );
+    // Find the specific sub-appointment to cancel
+    const subAppointment = appointment.appointments.id(appointmentId);
 
-    if (remainingAppointments.length > 0) {
-      // Update the main appointment document with the remaining appointments
-      appointment.appointments = remainingAppointments;
-      await appointment.save(); // Save the updated appointment document
+    if (!subAppointment) {
+      return res.status(404).json({ message: "Sub-appointment not found." });
+    }
+
+    // Retrieve the price of the service
+    const serviceDetails = await Service.findOne({ name: appointment.service });
+
+    if (!serviceDetails) {
+      return res.status(404).json({ message: "Service not found." });
+    }
+
+    const servicePrice = serviceDetails.amount;
+
+    // Store the canceled appointment in the CancelledAppointment collection
+    const cancelledAppointment = new CancelledAppointment({
+      userEmail: appointment.userEmail,
+      hospital: appointment.hospital,
+      service: appointment.service,
+      servicePrice, // Include the service price
+      doctor: appointment.doctor,
+      cancelledDate: subAppointment.date,
+      cancelledTime: subAppointment.time,
+      reason, // Reason for cancellation
+      description, // Optional description
+    });
+
+    await cancelledAppointment.save(); // Save the cancelled appointment
+
+    // Remove the sub-appointment from the main appointment's appointments array
+    appointment.appointments.pull(appointmentId);
+
+    if (appointment.appointments.length > 0) {
+      // If there are remaining appointments, save the updated document
+      await appointment.save();
       return res.status(200).json({
-        message: "Appointment cancelled successfully",
+        message: "Appointment cancelled and deleted successfully.",
         data: appointment,
       });
     } else {
-      // If no remaining appointments, remove the entire appointment document
+      // If no remaining appointments, delete the entire main appointment
       await Appointment.findByIdAndDelete(id);
       return res.status(200).json({
-        message:
-          "All appointments cancelled successfully, main record removed.",
+        message: "All appointments cancelled, main record removed.",
       });
     }
   } catch (error) {
-    // Error handling
-    res.status(500).json({
-      message: "Error cancelling appointment",
-      error: error.message,
-    });
+    console.error("Error cancelling appointment:", error);
+    res
+      .status(500)
+      .json({ message: "Error cancelling appointment", error: error.message });
   }
 };
