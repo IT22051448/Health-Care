@@ -4,6 +4,7 @@ import {
   getAppointmentsByEmail,
   updateAppointmentDateTime,
   cancelAppointment,
+  getCancelledAppointments,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -22,5 +23,8 @@ router.put(
 
 // Cancel an appointment
 router.delete("/cancel-appointment/:id/:appointmentId", cancelAppointment);
+
+// Get all cancelled appointments
+router.get("/cancelled-appointments", getCancelledAppointments);
 
 export default router;

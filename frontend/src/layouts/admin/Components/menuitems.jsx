@@ -1,4 +1,4 @@
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, ClockArrowUp } from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const adminSideBarMenuItems = [
@@ -7,6 +7,12 @@ export const adminSideBarMenuItems = [
     label: "Dashboard",
     path: "/admin/dashboard",
     icon: <LayoutDashboard />,
+  },
+  {
+    id: "appointment",
+    label: "Appointment DashBoard",
+    path: "/admin/appointment",
+    icon: <ClockArrowUp />,
   },
 ];
 

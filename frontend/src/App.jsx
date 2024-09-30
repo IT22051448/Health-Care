@@ -18,6 +18,11 @@ import AppointmentSummary from "./pages/customer/appointments/AppointmentSummery
 import ScheduleDoctorAppointments from "./pages/admin/Appointments/ScheduleDoctorAppointments";
 import ScheduledAppointments from "./pages/customer/appointments/ScheduledAppointments";
 
+import AdminAppointmentHome from "./pages/admin/Appointments/AppointmentHome";
+import ViewCancelledAppointments from "./pages/admin/Appointments/ViewCancelledAppointments";
+import ViewServices from "./pages/admin/Appointments/ViewServices";
+import EditService from "./pages/admin/Appointments/EditServices";
+
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -48,10 +53,17 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="appointment" element={<AdminAppointmentHome />} />
+          <Route
+            path="cancelled-appointment"
+            element={<ViewCancelledAppointments />}
+          />
           <Route
             path="doc-appointment"
             element={<ScheduleDoctorAppointments />}
           />
+          <Route path="view-services" element={<ViewServices />} />
+          <Route path="edit-service/:id" element={<EditService />} />
         </Route>
 
         <Route

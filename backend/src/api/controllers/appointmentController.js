@@ -203,3 +203,28 @@ export const cancelAppointment = async (req, res) => {
       .json({ message: "Error cancelling appointment", error: error.message });
   }
 };
+
+// Get all cancelled appointments
+export const getCancelledAppointments = async (req, res) => {
+  try {
+    // Fetch all cancelled appointments
+    const cancelledAppointments = await CancelledAppointment.find();
+
+    if (cancelledAppointments.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No cancelled appointments found" });
+    }
+
+    // Send success response with cancelled appointments data
+    res.status(200).json(cancelledAppointments);
+  } catch (error) {
+    console.error("Error fetching cancelled appointments:", error); // More detailed error logging
+    res
+      .status(500)
+      .json({
+        message: "Error fetching cancelled appointments",
+        error: error.message,
+      });
+  }
+};
