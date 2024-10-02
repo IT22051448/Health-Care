@@ -32,6 +32,15 @@ const AppointmentModal = ({
     onClose(); // Close modal
   };
 
+  // Helper function to format date as DD/MM/YYYY
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   if (!open) return null; // Early return if modal isn't open
 
   return (
@@ -54,7 +63,7 @@ const AppointmentModal = ({
                   }`}
                   onClick={() => handleDateClick(date)}
                 >
-                  {new Date(date).toLocaleDateString()}
+                  {formatDate(date)}
                 </div>
               </div>
             ))}

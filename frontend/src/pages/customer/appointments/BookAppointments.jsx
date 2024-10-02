@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import AppointmentModal from "../../../components/appointComponents/AppointmentModal";
 
 const BookAppointments = () => {
-  const navigate = useNavigate(); // Create a navigate function
+  const navigate = useNavigate();
   const [hospitals, setHospitals] = useState([]);
   const [servicesData, setServicesData] = useState([]);
   const [selectedHospital, setSelectedHospital] = useState("");
@@ -20,7 +21,12 @@ const BookAppointments = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch hospitals and services data
+  // Fetch user email from Redux store
+  const userEmail = useSelector((state) => state.auth.user?.email);
+
+  // Fetch AID from Redux store
+  const AID = useSelector((state) => state.auth.user?.AID);
+
   useEffect(() => {
     const fetchHospitals = async () => {
       const response = await axios.get(
@@ -116,6 +122,8 @@ const BookAppointments = () => {
       appointments: selectedAppointments,
       isGovernment,
       serviceAmount,
+      userEmail: userEmail || "", // Default to empty string if undefined
+      AID: AID || "", // Default to empty string if undefined
     };
 
     console.log("Appointment Data:", appointmentData);
@@ -149,9 +157,14 @@ const BookAppointments = () => {
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) => service.services.map((serv) => serv.serviceType));
 
+  // Filter doctors based on selected hospital and service
   const filteredDoctors = servicesData
     .filter((service) => service.hospitalName === selectedHospital)
-    .map((service) => service.doctorName);
+    .flatMap((service) =>
+      service.services
+        .filter((serv) => serv.serviceType === selectedService)
+        .map((serv) => service.doctorName)
+    );
 
   return (
     <div className="bg-blue-400">
@@ -289,9 +302,14 @@ const BookAppointments = () => {
             <input
               type="number"
               value={patientDetails.age}
-              onChange={(e) =>
-                setPatientDetails({ ...patientDetails, age: e.target.value })
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                // If the input is empty, set it to an empty string, otherwise ensure it's not below 0
+                setPatientDetails({
+                  ...patientDetails,
+                  age: value === "" ? "" : Math.max(0, value),
+                });
+              }}
               className="block w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />

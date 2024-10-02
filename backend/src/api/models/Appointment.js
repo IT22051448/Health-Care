@@ -63,11 +63,19 @@ const appointmentSchema = new mongoose.Schema({
     },
     status: {
       type: String,
-      enum: ["Pending", "Completed", "Failed"],
+      enum: ["Pending", "Completed", "Rejected"],
       default: function () {
         return this.isGovernment ? "Completed" : "Pending"; // Completed if government
       },
     },
+  },
+  userEmail: {
+    type: String,
+    required: true,
+  },
+  AID: {
+    type: String,
+    required: true,
   },
 });
 

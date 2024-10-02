@@ -84,3 +84,31 @@ export const deleteService = async (req, res) => {
       .json({ message: "Error deleting service", error: error.message });
   }
 };
+
+// Get available dates for a doctor
+export const getAvailableDates = async (req, res) => {
+  const { hospitalName, serviceType, doctorName } = req.query;
+
+  try {
+    const doctorService = await DoctorService.findOne({
+      hospitalName,
+      doctorName,
+    });
+
+    if (!doctorService) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // Collect all available dates for the specified service type
+    const availableDates = doctorService.services
+      .filter(service => service.serviceType === serviceType)
+      .flatMap(service => service.dates);
+
+    res.status(200).json(availableDates);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching available dates",
+      error: error.message,
+    });
+  }
+};

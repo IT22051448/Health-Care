@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
   last_login: {
     type: Date,
   },
+  AID: {
+    type: String,
+    unique: true,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

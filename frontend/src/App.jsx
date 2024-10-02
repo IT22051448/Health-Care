@@ -7,7 +7,7 @@ import AdminDashboard from "./pages/admin/dashboard/dashboard";
 
 import NotFound from "./pages/not-found/notfound";
 import CustomerLayout from "./layouts/customer/layout";
-import ShoppingHome from "./pages/customer/home/home";
+import PatientHome from "./pages/customer/home/home";
 import Profile from "./pages/customer/profile/profile";
 import UnAuthPage from "./pages/unauth-page";
 import CheckAuth from "./components/common/check-auth";
@@ -16,6 +16,14 @@ import { useSelector } from "react-redux";
 import BookAppointments from "./pages/customer/appointments/BookAppointments";
 import AppointmentSummary from "./pages/customer/appointments/AppointmentSummery";
 import ScheduleDoctorAppointments from "./pages/admin/Appointments/ScheduleDoctorAppointments";
+import ScheduledAppointments from "./pages/customer/appointments/ScheduledAppointments";
+
+import AdminAppointmentHome from "./pages/admin/Appointments/AppointmentHome";
+import ViewCancelledAppointments from "./pages/admin/Appointments/ViewCancelledAppointments";
+import ViewServices from "./pages/admin/Appointments/ViewServices";
+import EditService from "./pages/admin/Appointments/EditServices";
+import OngoingAppointments from "./pages/admin/Appointments/OngoingAppointments";
+import UpdateOngoingAppointments from "./pages/admin/Appointments/UpdateOngoingAppointments";
 
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -47,9 +55,24 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="appointment" element={<AdminAppointmentHome />} />
+          <Route
+            path="cancelled-appointment"
+            element={<ViewCancelledAppointments />}
+          />
           <Route
             path="doc-appointment"
             element={<ScheduleDoctorAppointments />}
+          />
+          <Route path="view-services" element={<ViewServices />} />
+          <Route path="edit-service/:id" element={<EditService />} />
+          <Route
+            path="ongoing-appointments"
+            element={<OngoingAppointments />}
+          />
+          <Route
+            path="appointments/:id"
+            element={<UpdateOngoingAppointments />}
           />
         </Route>
 
@@ -61,10 +84,11 @@ function App() {
             </CheckAuth>
           }
         >
-          <Route path="home" element={<ShoppingHome />} />
+          <Route path="home" element={<PatientHome />} />
           <Route path="profile" element={<Profile />} />
           <Route path="appointment" element={<BookAppointments />} />
           <Route path="appointment-summary" element={<AppointmentSummary />} />
+          <Route path="scheduled-appoint" element={<ScheduledAppointments />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />

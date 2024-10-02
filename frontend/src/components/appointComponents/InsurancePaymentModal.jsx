@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const InsurancePaymentModal = ({ onClose, onSubmit }) => {
+const InsurancePaymentModal = ({ onClose, onConfirm }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
@@ -24,8 +24,8 @@ const InsurancePaymentModal = ({ onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Call the onSubmit function with the formData and mark the payment as pending
-    onSubmit({ ...formData, paymentStatus: "pending" });
+    // Call the onConfirm function with the formData and mark the payment as pending
+    onConfirm({ ...formData, paymentStatus: "pending" });
   };
 
   return (

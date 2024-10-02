@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useLocation, useNavigate } from "react-router-dom";
 import CardPaymentModal from "@/components/appointComponents/CardPaymentModel";
 import InsurancePaymentModal from "@/components/appointComponents/InsurancePaymentModal";
 import { toast } from "@/hooks/use-toast";
 
 const AppointmentSummary = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Create navigate function
+  const navigate = useNavigate();
   const {
     hospital,
     service,
@@ -15,6 +15,8 @@ const AppointmentSummary = () => {
     appointments,
     isGovernment,
     serviceAmount,
+    userEmail,
+    AID,
   } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -39,6 +41,8 @@ const AppointmentSummary = () => {
           amount: isGovernment ? 0 : paymentAmount,
           method: isGovernment ? "government" : paymentMethod,
         },
+        userEmail: userEmail || "", // Ensure userEmail is defined
+        AID: AID || "",
       };
 
       try {
@@ -105,6 +109,8 @@ const AppointmentSummary = () => {
         method: "Insurance",
         status: "pending",
       },
+      userEmail: userEmail || "", // Ensure userEmail is defined
+      AID: AID || "",
     };
 
     try {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const CardPaymentModal = ({ onClose, onSubmit }) => {
+const CardPaymentModal = ({ onClose, onConfirm }) => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
@@ -74,7 +74,7 @@ const CardPaymentModal = ({ onClose, onSubmit }) => {
       return;
     }
 
-    onSubmit({ cardNumber, expiryDate, cvv, cardholderName }); // Pass the payment details to the submit function
+    onConfirm({ cardNumber, expiryDate, cvv, cardholderName }); // Pass the payment details to the submit function
     onClose(); // Close modal after submission
   };
 
