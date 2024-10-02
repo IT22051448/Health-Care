@@ -22,6 +22,8 @@ import AdminAppointmentHome from "./pages/admin/Appointments/AppointmentHome";
 import ViewCancelledAppointments from "./pages/admin/Appointments/ViewCancelledAppointments";
 import ViewServices from "./pages/admin/Appointments/ViewServices";
 import EditService from "./pages/admin/Appointments/EditServices";
+import OngoingAppointments from "./pages/admin/Appointments/OngoingAppointments";
+import UpdateOngoingAppointments from "./pages/admin/Appointments/UpdateOngoingAppointments";
 
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -64,6 +66,14 @@ function App() {
           />
           <Route path="view-services" element={<ViewServices />} />
           <Route path="edit-service/:id" element={<EditService />} />
+          <Route
+            path="ongoing-appointments"
+            element={<OngoingAppointments />}
+          />
+          <Route
+            path="appointments/:id"
+            element={<UpdateOngoingAppointments />}
+          />
         </Route>
 
         <Route

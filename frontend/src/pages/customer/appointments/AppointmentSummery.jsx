@@ -15,7 +15,8 @@ const AppointmentSummary = () => {
     appointments,
     isGovernment,
     serviceAmount,
-    userEmail, // Changed from email to userEmail
+    userEmail,
+    AID,
   } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -41,6 +42,7 @@ const AppointmentSummary = () => {
           method: isGovernment ? "government" : paymentMethod,
         },
         userEmail: userEmail || "", // Ensure userEmail is defined
+        AID: AID || "",
       };
 
       try {
@@ -108,6 +110,7 @@ const AppointmentSummary = () => {
         status: "pending",
       },
       userEmail: userEmail || "", // Ensure userEmail is defined
+      AID: AID || "",
     };
 
     try {

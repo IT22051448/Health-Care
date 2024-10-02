@@ -5,6 +5,10 @@ import {
   updateAppointmentDateTime,
   cancelAppointment,
   getCancelledAppointments,
+  getAllAppointments,
+  getAppointmentById,
+  updateAppointment,
+  deleteAppointment,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -26,5 +30,17 @@ router.delete("/cancel-appointment/:id/:appointmentId", cancelAppointment);
 
 // Get all cancelled appointments
 router.get("/cancelled-appointments", getCancelledAppointments);
+
+// Get all appointments for the admin
+router.get("/all-appointments", getAllAppointments);
+
+// Get specific appointment by ID for admin details view
+router.get("/appointment/:id", getAppointmentById);
+
+// Update an appointment
+router.put("/update-appointment/:id", updateAppointment);
+
+// Delete an appointment
+router.delete("/delete-appointment/:id", deleteAppointment);
 
 export default router;

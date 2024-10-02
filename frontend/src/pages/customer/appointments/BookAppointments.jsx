@@ -24,6 +24,9 @@ const BookAppointments = () => {
   // Fetch user email from Redux store
   const userEmail = useSelector((state) => state.auth.user?.email);
 
+  // Fetch AID from Redux store
+  const AID = useSelector((state) => state.auth.user?.AID);
+
   useEffect(() => {
     const fetchHospitals = async () => {
       const response = await axios.get(
@@ -120,6 +123,7 @@ const BookAppointments = () => {
       isGovernment,
       serviceAmount,
       userEmail: userEmail || "", // Default to empty string if undefined
+      AID: AID || "", // Default to empty string if undefined
     };
 
     console.log("Appointment Data:", appointmentData);
@@ -298,9 +302,14 @@ const BookAppointments = () => {
             <input
               type="number"
               value={patientDetails.age}
-              onChange={(e) =>
-                setPatientDetails({ ...patientDetails, age: e.target.value })
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                // If the input is empty, set it to an empty string, otherwise ensure it's not below 0
+                setPatientDetails({
+                  ...patientDetails,
+                  age: value === "" ? "" : Math.max(0, value),
+                });
+              }}
               className="block w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />

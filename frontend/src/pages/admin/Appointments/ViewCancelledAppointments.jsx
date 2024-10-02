@@ -35,6 +35,7 @@ const ViewCancelledAppointments = () => {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr className="bg-gray-100">
+              <th className="py-1 px-2 border-b text-left text-sm">AID</th>
               <th className="py-1 px-2 border-b text-left text-sm">
                 User Email
               </th>
@@ -66,6 +67,9 @@ const ViewCancelledAppointments = () => {
             ) : (
               cancelledAppointments.map((appointment, index) => (
                 <tr key={index} className="hover:bg-gray-50">
+                  <td className="py-1 px-2 border-b text-sm">
+                    {appointment.AID}
+                  </td>
                   <td className="py-1 px-2 border-b text-sm">
                     {appointment.userEmail}
                   </td>

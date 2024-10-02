@@ -12,8 +12,9 @@ export const createAppointment = async (req, res) => {
       doctor,
       patientDetails,
       appointments,
-      payment: { amount, method } = {}, // Destructure payment details from request body
+      payment: { amount, method } = {},
       userEmail,
+      AID,
     } = req.body;
 
     // Prepare payment details based on hospital type
@@ -46,6 +47,7 @@ export const createAppointment = async (req, res) => {
       appointments,
       payment,
       userEmail,
+      AID,
     });
 
     // Save the new appointment to the database
@@ -166,6 +168,7 @@ export const cancelAppointment = async (req, res) => {
 
     // Store the canceled appointment in the CancelledAppointment collection
     const cancelledAppointment = new CancelledAppointment({
+      AID: appointment.AID,
       userEmail: appointment.userEmail,
       hospital: appointment.hospital,
       service: appointment.service,
@@ -220,11 +223,92 @@ export const getCancelledAppointments = async (req, res) => {
     res.status(200).json(cancelledAppointments);
   } catch (error) {
     console.error("Error fetching cancelled appointments:", error); // More detailed error logging
+    res.status(500).json({
+      message: "Error fetching cancelled appointments",
+      error: error.message,
+    });
+  }
+};
+
+// Fetch all appointments for admin
+export const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({}); // Fetch all fields
+
+    if (appointments.length === 0) {
+      return res.status(404).json({ message: "No appointments found" });
+    }
+
+    res.status(200).json(appointments);
+  } catch (error) {
     res
       .status(500)
-      .json({
-        message: "Error fetching cancelled appointments",
-        error: error.message,
-      });
+      .json({ message: "Error fetching appointments", error: error.message });
+  }
+};
+
+// Fetch a specific appointment by ID for admin
+export const getAppointmentById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const appointment = await Appointment.findById(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json(appointment);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching appointment", error: error.message });
+  }
+};
+
+// Update an appointment by ID for admin
+export const updateAppointment = async (req, res) => {
+  const { id } = req.params;
+  const { hospital, service, doctor, patientDetails, appointments, payment } =
+    req.body;
+
+  try {
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      { hospital, service, doctor, patientDetails, appointments, payment },
+      { new: true }
+    );
+
+    if (!updatedAppointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({
+      message: "Appointment updated successfully",
+      data: updatedAppointment,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating appointment", error: error.message });
+  }
+};
+
+// Delete an appointment by ID for admin
+export const deleteAppointment = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const appointment = await Appointment.findByIdAndDelete(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting appointment", error: error.message });
   }
 };

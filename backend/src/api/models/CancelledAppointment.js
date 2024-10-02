@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const cancelledAppointmentSchema = new mongoose.Schema({
+  AID: {
+    type: String,
+    required: true,
+  },
+
   userEmail: {
     type: String,
     required: true,

@@ -12,6 +12,7 @@ const initialState = {
   email: "",
   password: "",
   referralCode: "",
+  role: "user",
 };
 
 const AuthSignup = () => {

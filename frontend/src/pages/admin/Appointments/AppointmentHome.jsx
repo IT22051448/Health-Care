@@ -14,7 +14,7 @@ const AppointmentHome = () => {
     {
       title: "Manage Ongoing Appointments",
       description: "View and manage ongoing appointments.",
-      route: "/ongoing-appointments",
+      route: "/admin/ongoing-appointments",
     },
     {
       title: "Manage Doctor Appointments",

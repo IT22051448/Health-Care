@@ -12,6 +12,7 @@ const ScheduledAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedSubAppointment, setSelectedSubAppointment] = useState(null);
   const userEmail = useSelector((state) => state.auth.user?.email);
+  const AID = useSelector((state) => state.auth.user?.AID);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -49,7 +50,7 @@ const ScheduledAppointments = () => {
     setSelectedAppointment(appointment);
     setSelectedSubAppointment({
       _id: subAppointment._id,
-      appointmentId: appointment._id, // Include appointmentId here
+      appointmentId: appointment._id,
     });
     setIsModalOpen(true);
   };
@@ -57,9 +58,9 @@ const ScheduledAppointments = () => {
   const handleCancel = (appointment, subAppointment) => {
     setSelectedSubAppointment({
       ...subAppointment,
-      appointmentId: appointment._id, // Include appointmentId here
+      appointmentId: appointment._id,
     });
-    setIsCancellationModalOpen(true); // Open the cancellation modal
+    setIsCancellationModalOpen(true);
   };
 
   const confirmReschedule = async (newDate, newTimes) => {
@@ -201,7 +202,7 @@ const ScheduledAppointments = () => {
               </p>
               <p className="text-gray-700 mb-1">
                 <strong>Payment Method:</strong>{" "}
-                {appointment.payment?.method || "N/A"}
+                {appointment.payment?.method || "Government Hospital"}
               </p>
               <p className="text-gray-700 mb-5">
                 <strong>Payment Status:</strong>{" "}

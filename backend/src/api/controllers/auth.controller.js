@@ -4,6 +4,7 @@ import logger from "../../utils/logger.js";
 import bcrypt from "bcrypt";
 import genAuthToken from "../../utils/genAuthToken.js";
 import { emailOrUsername } from "../../utils/helpers.js";
+import AidCounter from "../models/AidCounter.js";
 
 const authController = {
   async register(req, res) {
@@ -43,6 +44,37 @@ const authController = {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
 
+      console.log("Role being processed:", role);
+
+      // Create user AID starting from A0001 if the role is 'user'
+      let AID = null;
+      if (role === "user") {
+        // Ensure the AidCounter exists
+        let aidCounter = await AidCounter.findOne();
+        if (!aidCounter) {
+          aidCounter = await AidCounter.create({ currentAID: 1 }); // Create the AidCounter with a starting value
+          console.log(
+            "Created AidCounter with currentAID:",
+            aidCounter.currentAID
+          );
+        } else {
+          // Increment the AID
+          aidCounter = await AidCounter.findOneAndUpdate(
+            {},
+            { $inc: { currentAID: 1 } },
+            { new: true }
+          );
+          console.log(
+            "Updated AidCounter to currentAID:",
+            aidCounter.currentAID
+          );
+        }
+
+        // Format the AID (e.g., A0001, A0002, ...)
+        AID = `A${String(aidCounter.currentAID).padStart(4, "0")}`; // Use currentAID instead of sequenceValue
+        console.log("Generated AID:", AID);
+      }
+
       const user = new User({
         username,
         firstname,
@@ -52,6 +84,7 @@ const authController = {
         role,
         avatar,
         contact,
+        AID,
         created_date: new Date(),
         last_login: new Date(),
       });
