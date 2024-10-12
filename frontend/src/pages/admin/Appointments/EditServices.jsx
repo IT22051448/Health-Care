@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  fetchDoctors,
+  fetchHospitals,
+  fetchAllServices,
+  fetchServiceById,
+  updateServiceDetails,
+} from "@/redux/appointSlice/appointSlice";
 
 const EditService = () => {
-  const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [doctors, setDoctors] = useState([]);
-  const [hospitals, setHospitals] = useState([]);
-  const [servicesList, setServicesList] = useState([]); // State for all services
-  const [selectedDoctor, setSelectedDoctor] = useState("");
-  const [selectedHospital, setSelectedHospital] = useState("");
   const [serviceDetails, setServiceDetails] = useState([
     {
       serviceType: "",
       dates: [{ date: new Date().toISOString().split("T")[0], times: [""] }],
     },
   ]);
+
+  // State for selected doctor and hospital
+  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedHospital, setSelectedHospital] = useState("");
 
   // Error state variables
   const [doctorError, setDoctorError] = useState("");
@@ -26,42 +31,20 @@ const EditService = () => {
 
   const navigate = useNavigate();
   const { id } = useParams();
+  const dispatch = useDispatch();
+
+  const doctors = useSelector((state) => state.appointments.doctors);
+  const hospitals = useSelector((state) => state.appointments.hospitals);
+  const servicesList = useSelector((state) => state.appointments.servicesData);
+  const service = useSelector((state) => state.appointments.service);
 
   useEffect(() => {
-    const fetchService = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/api/doctorService/get-service/${id}`
-        );
-
-        setService(response.data);
-        setSelectedDoctor(response.data.doctorName);
-        setSelectedHospital(response.data.hospitalName);
-
-        // Populate serviceDetails with existing service data
-        const existingServices = response.data.services.map((service) => ({
-          serviceType: service.serviceType,
-          dates: service.dates.map((date) => ({
-            date: formatDate(date.date), // Format the date for display
-            times: date.times,
-          })),
-        }));
-
-        setServiceDetails(
-          existingServices.length > 0
-            ? existingServices
-            : [
-                {
-                  serviceType: "",
-                  dates: [
-                    {
-                      date: formatDate(new Date().toISOString()),
-                      times: [""],
-                    },
-                  ],
-                },
-              ]
-        );
+        await dispatch(fetchServiceById(id)).unwrap();
+        await dispatch(fetchDoctors()).unwrap();
+        await dispatch(fetchHospitals()).unwrap();
+        await dispatch(fetchAllServices()).unwrap();
       } catch (err) {
         setError(err.message);
       } finally {
@@ -69,51 +52,31 @@ const EditService = () => {
       }
     };
 
-    const fetchDoctors = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/doctor/get-doctors"
-        );
-        setDoctors(response.data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
+    fetchData();
+  }, [id, dispatch]);
 
-    const fetchHospitals = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/hospital/get-hospitals"
-        );
-        setHospitals(response.data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    const fetchAllServices = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/service/get-services"
-        );
-        setServicesList(response.data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    fetchService();
-    fetchDoctors();
-    fetchHospitals();
-    fetchAllServices(); // Fetch all services
-  }, [id]);
+  useEffect(() => {
+    if (service) {
+      setServiceDetails(
+        service.services.map((service) => ({
+          serviceType: service.serviceType,
+          dates: service.dates.map((date) => ({
+            date: formatDate(date.date),
+            times: date.times,
+          })),
+        }))
+      );
+      setSelectedDoctor(service.doctorName || "");
+      setSelectedHospital(service.hospitalName || "");
+    }
+  }, [service]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`; // Format as YYYY-MM-DD for <input type="date">
+    return `${year}-${month}-${day}`;
   };
 
   const addService = () => {
@@ -191,22 +154,25 @@ const EditService = () => {
     }
 
     try {
-      await axios.put(
-        `http://localhost:5000/api/doctorService/update-service/${id}`,
-        {
-          doctorName: selectedDoctor,
-          hospitalName: selectedHospital,
-          services: serviceDetails.map((service) => ({
-            serviceType: service.serviceType,
-            dates: service.dates.map((date) => ({
-              date: convertToApiDateFormat(date.date), // Convert to YYYY-MM-DD for API
-              times: date.times,
+      await dispatch(
+        updateServiceDetails({
+          id,
+          updatedService: {
+            doctorName: selectedDoctor, // Add selected doctor
+            hospitalName: selectedHospital, // Add selected hospital
+            services: serviceDetails.map((service) => ({
+              serviceType: service.serviceType,
+              dates: service.dates.map((date) => ({
+                date: convertToApiDateFormat(date.date),
+                times: date.times,
+              })),
             })),
-          })),
-        }
-      );
+          },
+        })
+      ).unwrap();
+
       alert("Service updated successfully!");
-      navigate("/admin/view-services"); // Redirect after successful update
+      navigate("/admin/view-services");
     } catch (error) {
       setError(error.message);
     }
@@ -214,7 +180,7 @@ const EditService = () => {
 
   const convertToApiDateFormat = (displayDate) => {
     const [year, month, day] = displayDate.split("-");
-    return `${year}-${month}-${day}`; // Correct format for YYYY-MM-DD
+    return `${year}-${month}-${day}`;
   };
 
   if (loading) return <div>Loading...</div>;
@@ -320,7 +286,7 @@ const EditService = () => {
             <button
               type="button"
               onClick={() => removeService(index)}
-              className="absolute top-2 right-2 text-red-500"
+              className="absolute top-4 right-4 text-red-500"
             >
               Remove
             </button>
@@ -329,13 +295,13 @@ const EditService = () => {
         <button
           type="button"
           onClick={addService}
-          className="bg-blue-500 text-white rounded p-2 mr-6"
+          className="mb-4 bg-blue-500 text-white py-2 px-4 rounded"
         >
           Add Another Service
         </button>
         <button
           type="submit"
-          className="bg-green-500 text-white rounded p-2 mt-4"
+          className="bg-green-500 text-white py-2 px-4 rounded"
         >
           Update Service
         </button>

@@ -24,7 +24,6 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Call the onConfirm function with the formData and mark the payment as pending
     onConfirm({ ...formData, paymentStatus: "pending" });
   };
 

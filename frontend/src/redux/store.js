@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
+import appointReducer from "./appointSlice/appointSlice";
 
 import storage from "redux-persist/lib/storage";
 
@@ -15,6 +16,7 @@ const persistConfig = {
 
 const reducer = combineReducers({
   auth: authReducer,
+  appointments: appointReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);

@@ -1,50 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchAppointments,
+  rescheduleAppointment,
+  cancelAppointment,
+} from "@/redux/appointSlice/appointSlice";
 import RescheduleModal from "@/components/appointComponents/RescheduleModal";
 import CancellationModal from "@/components/appointComponents/CancellationModal";
-import axios from "axios";
 
 const ScheduledAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedSubAppointment, setSelectedSubAppointment] = useState(null);
+
+  const dispatch = useDispatch();
   const userEmail = useSelector((state) => state.auth.user?.email);
-  const AID = useSelector((state) => state.auth.user?.AID);
+  const appointments =
+    useSelector((state) => state.appointments.appointments) || []; // Ensure it's an array
+  const loading = useSelector((state) => state.appointments.loading);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!userEmail) {
-        toast({
-          title: "Error",
-          description: "User email not found.",
-          type: "error",
-        });
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/appoint/scheduled-appointments?userEmail=${userEmail}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setAppointments(data);
-        }
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-        toast({
-          title: "Error",
-          description: "An error occurred while fetching appointments.",
-          type: "error",
-        });
-      }
-    };
-
-    fetchAppointments();
-  }, [userEmail]);
+    if (userEmail) {
+      dispatch(fetchAppointments(userEmail));
+    } else {
+      toast({
+        title: "Error",
+        description: "User email not found.",
+        type: "error",
+      });
+    }
+  }, [dispatch, userEmail]);
 
   const handleReschedule = (appointment, subAppointment) => {
     setSelectedAppointment(appointment);
@@ -64,60 +51,29 @@ const ScheduledAppointments = () => {
   };
 
   const confirmReschedule = async (newDate, newTimes) => {
-    try {
-      const formattedDate = newDate.split("/").reverse().join("-");
+    const formattedDate = newDate.split("/").reverse().join("-");
+    const appointmentId = selectedAppointment._id;
+    const subAppointmentId = selectedSubAppointment._id;
 
-      // Construct the appointment and sub-appointment IDs
-      const appointmentId = selectedAppointment._id;
-      const subAppointmentId = selectedSubAppointment._id;
+    const action = await dispatch(
+      rescheduleAppointment({
+        appointmentId,
+        subAppointmentId,
+        newDate: formattedDate,
+        newTimes,
+      })
+    );
 
-      // Make the API call to the new endpoint
-      const response = await axios.put(
-        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
-        {
-          newDate: formattedDate, // e.g., "2024-10-05"
-          newTimes: newTimes, // Use the first selected time if only one is needed
-        }
-      );
-
-      if (response.status === 200) {
-        const updatedAppointments = appointments.map((appt) => {
-          if (appt._id === selectedAppointment._id) {
-            return {
-              ...appt,
-              appointments: appt.appointments.map((subAppt) => {
-                if (subAppt._id === selectedSubAppointment._id) {
-                  return {
-                    ...subAppt,
-                    date: formattedDate, // Update the date here
-                    time: [newTimes], // Update the time here
-                  };
-                }
-                return subAppt;
-              }),
-            };
-          }
-          return appt;
-        });
-
-        setAppointments(updatedAppointments);
-        toast({
-          title: "Success",
-          description: "Appointment rescheduled!",
-          type: "success",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to reschedule appointment.",
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Error rescheduling appointment:", error);
+    if (rescheduleAppointment.fulfilled.match(action)) {
+      toast({
+        title: "Success",
+        description: "Appointment rescheduled!",
+        type: "success",
+      });
+    } else {
       toast({
         title: "Error",
-        description: "An error occurred while rescheduling appointment.",
+        description: "Failed to reschedule appointment.",
         type: "error",
       });
     }
@@ -125,49 +81,28 @@ const ScheduledAppointments = () => {
   };
 
   const confirmCancellation = async (reason, description) => {
-    try {
-      const appointmentId = selectedSubAppointment.appointmentId;
-      const subAppointmentId = selectedSubAppointment._id;
+    const appointmentId = selectedSubAppointment.appointmentId;
+    const subAppointmentId = selectedSubAppointment._id;
 
-      // Call the API to cancel the appointment
-      const response = await axios.delete(
-        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
-        {
-          data: { reason, description },
-        }
-      );
+    const action = await dispatch(
+      cancelAppointment({
+        appointmentId,
+        subAppointmentId,
+        reason,
+        description,
+      })
+    );
 
-      if (response.status === 200) {
-        // Update the appointments state by filtering out the cancelled appointment
-        const updatedAppointments = appointments
-          .map((appt) => {
-            return {
-              ...appt,
-              appointments: appt.appointments.filter(
-                (subAppt) => subAppt._id !== selectedSubAppointment._id
-              ),
-            };
-          })
-          .filter((appt) => appt.appointments.length > 0); // Remove any appointment with no sub-appointments
-
-        setAppointments(updatedAppointments);
-        toast({
-          title: "Success",
-          description: "Appointment cancelled successfully!",
-          type: "success",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to cancel appointment.",
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Error cancelling appointment:", error);
+    if (cancelAppointment.fulfilled.match(action)) {
+      toast({
+        title: "Success",
+        description: "Appointment cancelled successfully!",
+        type: "success",
+      });
+    } else {
       toast({
         title: "Error",
-        description: "An error occurred while cancelling appointment.",
+        description: "Failed to cancel appointment.",
         type: "error",
       });
     }
@@ -181,7 +116,9 @@ const ScheduledAppointments = () => {
           Your Appointments
         </h1>
 
-        {appointments.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-gray-700">Loading appointments...</p>
+        ) : appointments.length === 0 ? (
           <p className="text-center text-gray-700">
             No scheduled appointments found.
           </p>
@@ -209,29 +146,34 @@ const ScheduledAppointments = () => {
                 {appointment.payment?.status || "Pending"}
               </p>
 
-              {appointment.appointments.map((appt) => (
-                <div key={appt._id} className="mb-4 border p-2 rounded">
-                  <p className="text-gray-700 mb-1">
-                    <strong>Date:</strong>{" "}
-                    {new Date(appt.date).toLocaleDateString("en-GB")} -{" "}
-                    {appt.time.join(", ")}
-                  </p>
-                  <div className="flex justify-between mt-4">
-                    <button
-                      className="bg-red-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-red-700 transition duration-200 shadow mr-2"
-                      onClick={() => handleCancel(appointment, appt)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow"
-                      onClick={() => handleReschedule(appointment, appt)}
-                    >
-                      Reschedule
-                    </button>
+              {appointment.appointments &&
+              appointment.appointments.length > 0 ? (
+                appointment.appointments.map((appt) => (
+                  <div key={appt._id} className="mb-4 border p-2 rounded">
+                    <p className="text-gray-700 mb-1">
+                      <strong>Date:</strong>{" "}
+                      {new Date(appt.date).toLocaleDateString("en-GB")} -{" "}
+                      {appt.time.join(", ")}
+                    </p>
+                    <div className="flex justify-between mt-4">
+                      <button
+                        className="bg-red-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-red-700 transition duration-200 shadow mr-2"
+                        onClick={() => handleCancel(appointment, appt)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="bg-blue-600 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow"
+                        onClick={() => handleReschedule(appointment, appt)}
+                      >
+                        Reschedule
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p>No sub-appointments available.</p>
+              )}
             </div>
           ))
         )}
