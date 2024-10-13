@@ -1,32 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllAppointments } from "@/redux/appointSlice/appointSlice";
 
 const OngoingAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
+  const { appointments, loading } = useSelector((state) => state.appointments);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Fetch all ongoing appointments from the backend
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/appoint/all-appointments"
-        );
-        console.log("Fetched appointments:", response.data); // Log the fetched data
-        setAppointments(response.data);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-      }
-    };
-
-    fetchAppointments();
-  }, []);
+    dispatch(fetchAllAppointments());
+  }, [dispatch]);
 
   const handleDetailsClick = (id) => {
-    console.log("Navigating to appointment:", id); // Log the appointment ID being navigated to
+    console.log("Navigating to appointment:", id);
     navigate(`/admin/appointments/${id}`);
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto mt-10">
@@ -34,7 +25,7 @@ const OngoingAppointments = () => {
       <table className="min-w-full bg-white border">
         <thead>
           <tr>
-            <th className="border px-4 py-2">Patient ID</th>
+            <th className="border px-4 py-2">Account ID</th>
             <th className="border px-4 py-2">Full Name</th>
             <th className="border px-4 py-2">Hospital</th>
             <th className="border px-4 py-2">Service</th>

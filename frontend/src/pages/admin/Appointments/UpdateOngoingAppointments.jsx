@@ -1,81 +1,78 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchHospitals,
+  fetchAllServices,
+  fetchDoctors,
+  fetchAppointmentByID,
+  updateAppointment,
+  deleteAppointment,
+} from "@/redux/appointSlice/appointSlice";
 
 const UpdateOngoingAppointments = () => {
   const { id } = useParams();
-  const [appointment, setAppointment] = useState(null);
-  const [hospitals, setHospitals] = useState([]);
-  const [servicesData, setServicesData] = useState([]);
-  const [doctors, setDoctors] = useState([]);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const appointment = useSelector((state) =>
+    state.appointments.appointments.find((appt) => appt._id === id)
+  );
+  const hospitals = useSelector((state) => state.appointments.hospitals);
+  const servicesData = useSelector((state) => state.appointments.servicesData);
+  const doctors = useSelector((state) => state.appointments.doctors);
+
+  const [formData, setFormData] = useState(appointment || {});
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(fetchHospitals());
+    dispatch(fetchAllServices());
+    dispatch(fetchDoctors());
+    dispatch(fetchAppointmentByID(id));
+  }, [dispatch, id]);
 
   useEffect(() => {
-    const fetchAppointment = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/api/appoint/appointment/${id}`
-        );
-        setAppointment(response.data);
-        setSelectedHospital(response.data.hospital);
-        setSelectedService(response.data.service);
-      } catch (error) {
-        console.error("Error fetching appointment:", error);
-      }
-    };
-
-    const fetchHospitals = async () => {
-      const response = await axios.get(
-        "http://localhost:5000/api/hospital/get-hospitals"
-      );
-      setHospitals(response.data);
-    };
-
-    const fetchServicesData = async () => {
-      const response = await axios.get(
-        "http://localhost:5000/api/service/get-services"
-      );
-      setServicesData(response.data);
-    };
-
-    const fetchDoctors = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/doctor/get-doctors"
-        );
-        console.log("Doctors fetched:", response.data); // Log the fetched data
-        setDoctors(response.data); // Set all doctors
-        console.log("Doctors after setting state:", response.data); // Log right after setting state
-      } catch (error) {
-        console.error("Error fetching doctors:", error);
-      }
-    };
-
-    fetchAppointment();
-    fetchHospitals();
-    fetchServicesData();
-    fetchDoctors();
-  }, [id]);
+    if (appointment) {
+      setFormData(appointment);
+      setSelectedHospital(appointment.hospital);
+      setSelectedService(appointment.service);
+    }
+  }, [appointment]);
 
   useEffect(() => {
-    // Update selected service details when a service is selected
     const serviceDetails = servicesData.find(
       (service) => service.name === selectedService
     );
     setSelectedServiceDetails(serviceDetails);
   }, [selectedService, servicesData]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    // Update nested patientDetails for fullName and age
+    if (name === "fullName" || name === "age") {
+      setFormData((prev) => ({
+        ...prev,
+        patientDetails: {
+          ...prev.patientDetails,
+          [name]: value,
+        },
+      }));
+    } else {
+      // For other fields, update directly
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(
-        `http://localhost:5000/api/appoint/update-appointment/${id}`,
-        appointment
-      );
+      await dispatch(
+        updateAppointment({ id, appointmentData: formData })
+      ).unwrap();
       alert("Appointment updated successfully!");
       navigate("/admin/ongoing-appointments");
     } catch (error) {
@@ -83,11 +80,9 @@ const UpdateOngoingAppointments = () => {
     }
   };
 
-  const handleDelete = async (appointmentId) => {
+  const handleDelete = async () => {
     try {
-      await axios.delete(
-        `http://localhost:5000/api/appoint/delete-appointment/${appointmentId}`
-      );
+      await dispatch(deleteAppointment(id)).unwrap();
       alert("Appointment deleted successfully!");
       navigate("/admin/ongoing-appointments");
     } catch (error) {
@@ -96,12 +91,12 @@ const UpdateOngoingAppointments = () => {
   };
 
   const handleAppointmentChange = (index, field, value) => {
-    const updatedAppointments = [...appointment.appointments];
+    const updatedAppointments = [...formData.appointments];
     updatedAppointments[index] = {
       ...updatedAppointments[index],
       [field]: value,
     };
-    setAppointment({ ...appointment, appointments: updatedAppointments });
+    setFormData({ ...formData, appointments: updatedAppointments });
   };
 
   if (!appointment) return <div>Loading...</div>;
@@ -120,16 +115,9 @@ const UpdateOngoingAppointments = () => {
               </label>
               <input
                 type="text"
-                value={appointment.patientDetails.fullName}
-                onChange={(e) =>
-                  setAppointment({
-                    ...appointment,
-                    patientDetails: {
-                      ...appointment.patientDetails,
-                      fullName: e.target.value,
-                    },
-                  })
-                }
+                name="fullName"
+                value={formData.patientDetails?.fullName || ""}
+                onChange={handleInputChange}
                 className="w-full p-2 border rounded"
               />
             </div>
@@ -139,34 +127,19 @@ const UpdateOngoingAppointments = () => {
               </label>
               <input
                 type="number"
-                value={
-                  appointment.patientDetails.age === 0
-                    ? ""
-                    : appointment.patientDetails.age
-                }
-                onChange={(e) => {
-                  const value =
-                    e.target.value === ""
-                      ? ""
-                      : Math.max(0, Number(e.target.value));
-                  setAppointment({
-                    ...appointment,
-                    patientDetails: {
-                      ...appointment.patientDetails,
-                      age: value,
-                    },
-                  });
-                }}
+                name="age"
+                value={formData.patientDetails?.age || ""}
+                onChange={handleInputChange}
                 className="w-full p-2 border rounded"
               />
             </div>
             <div className="col-span-2">
               <label className="block font-semibold mb-2 text-gray-700">
-                Patient ID
+                Account ID
               </label>
               <input
                 type="text"
-                value={appointment.AID} // Assuming AID is in the appointment object
+                value={formData.AID}
                 readOnly
                 className="w-1/2 p-2 border rounded bg-gray-100 cursor-not-allowed"
               />
@@ -182,16 +155,16 @@ const UpdateOngoingAppointments = () => {
                     key={gender}
                     type="button"
                     onClick={() =>
-                      setAppointment({
-                        ...appointment,
+                      setFormData({
+                        ...formData,
                         patientDetails: {
-                          ...appointment.patientDetails,
+                          ...formData.patientDetails,
                           gender,
                         },
                       })
                     }
                     className={`flex-1 py-2 border rounded-md text-sm ${
-                      appointment.patientDetails.gender === gender
+                      formData.patientDetails?.gender === gender
                         ? "bg-blue-500 text-white border-blue-600"
                         : "bg-white text-black border-gray-300"
                     } hover:bg-blue-500 transition duration-200`}
@@ -217,7 +190,7 @@ const UpdateOngoingAppointments = () => {
                 onChange={(e) => {
                   const hospitalName = e.target.value;
                   setSelectedHospital(hospitalName);
-                  setAppointment({ ...appointment, hospital: hospitalName });
+                  setFormData({ ...formData, hospital: hospitalName });
                 }}
                 className="w-full p-2 border rounded"
               >
@@ -238,7 +211,7 @@ const UpdateOngoingAppointments = () => {
                 onChange={(e) => {
                   const serviceName = e.target.value;
                   setSelectedService(serviceName);
-                  setAppointment({ ...appointment, service: serviceName });
+                  setFormData({ ...formData, service: serviceName });
                 }}
                 className="w-full p-2 border rounded"
                 disabled={!selectedHospital}
@@ -256,9 +229,9 @@ const UpdateOngoingAppointments = () => {
                 Doctor
               </label>
               <select
-                value={appointment.doctor}
+                value={formData.doctor}
                 onChange={(e) =>
-                  setAppointment({ ...appointment, doctor: e.target.value })
+                  setFormData({ ...formData, doctor: e.target.value })
                 }
                 className="w-full p-2 border rounded"
               >
@@ -289,7 +262,7 @@ const UpdateOngoingAppointments = () => {
         {/* Appointments Section */}
         <div className="border p-4 rounded-md shadow-md mb-6">
           <h2 className="text-xl font-semibold mb-4">Appointments</h2>
-          {appointment.appointments.map((apt, index) => (
+          {formData.appointments.map((apt, index) => (
             <div
               key={apt._id}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
@@ -300,7 +273,7 @@ const UpdateOngoingAppointments = () => {
                 </label>
                 <input
                   type="date"
-                  value={apt.date.split("T")[0]} // Format date for input
+                  value={apt.date.split("T")[0]}
                   onChange={(e) =>
                     handleAppointmentChange(index, "date", e.target.value)
                   }
@@ -313,7 +286,7 @@ const UpdateOngoingAppointments = () => {
                 </label>
                 <input
                   type="time"
-                  value={apt.time[0]} // Assuming time is an array
+                  value={apt.time[0]}
                   onChange={(e) =>
                     handleAppointmentChange(index, "time", [e.target.value])
                   }
@@ -334,65 +307,61 @@ const UpdateOngoingAppointments = () => {
               </label>
               <select
                 value={
-                  appointment.isGovernment
+                  formData.isGovernment
                     ? "Government Hospital"
-                    : appointment.payment.method
+                    : formData.payment.method
                 }
                 onChange={(e) =>
-                  setAppointment({
-                    ...appointment,
-                    payment: { ...appointment.payment, method: e.target.value },
+                  setFormData({
+                    ...formData,
+                    payment: { ...formData.payment, method: e.target.value },
                   })
                 }
-                disabled={appointment.isGovernment}
+                disabled={formData.isGovernment}
                 className="w-full p-2 border rounded"
               >
                 <option value="Card Payment">Card Payment</option>
                 <option value="Cash">Cash</option>
                 <option value="Insurance">Insurance</option>
               </select>
-              {appointment.isGovernment && (
+              {formData.isGovernment && (
                 <p className="text-gray-500">
                   Government Hospital - No payment method required
                 </p>
               )}
             </div>
-
             <div>
               <label className="block font-semibold mb-2 text-gray-700">
                 Payment Amount
               </label>
               <input
                 type="number"
-                value={
-                  appointment.isGovernment ? "" : appointment.payment.amount
-                }
+                value={formData.isGovernment ? "" : formData.payment.amount}
                 onChange={(e) =>
-                  setAppointment({
-                    ...appointment,
-                    payment: { ...appointment.payment, amount: e.target.value },
+                  setFormData({
+                    ...formData,
+                    payment: { ...formData.payment, amount: e.target.value },
                   })
                 }
-                disabled={appointment.isGovernment}
+                disabled={formData.isGovernment}
                 className="w-full p-2 border rounded"
               />
-              {appointment.isGovernment && (
+              {formData.isGovernment && (
                 <p className="text-gray-500">
                   Government Hospital - No payment required
                 </p>
               )}
             </div>
-
             <div>
               <label className="block font-semibold mb-2 text-gray-700">
                 Payment Status
               </label>
               <select
-                value={appointment.payment.status}
+                value={formData.payment.status}
                 onChange={(e) =>
-                  setAppointment({
-                    ...appointment,
-                    payment: { ...appointment.payment, status: e.target.value },
+                  setFormData({
+                    ...formData,
+                    payment: { ...formData.payment, status: e.target.value },
                   })
                 }
                 className="w-full p-2 border rounded"
@@ -414,7 +383,7 @@ const UpdateOngoingAppointments = () => {
           </button>
           <button
             type="button"
-            onClick={() => handleDelete(id)}
+            onClick={handleDelete}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
           >
             Delete Appointment

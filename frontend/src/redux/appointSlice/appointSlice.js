@@ -6,6 +6,7 @@ const initialState = {
   hospitals: [],
   servicesData: [],
   availableDates: [],
+  cancelledAppointments: [],
   service: null,
   loading: false,
   error: null,
@@ -164,6 +165,85 @@ export const fetchAllServices = createAsyncThunk(
   }
 );
 
+// This code is used to fetch all appointments
+export const fetchAllAppointments = createAsyncThunk(
+  "appointments/fetchAllAppointments",
+  async () => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/all-appointments`
+    );
+    return response.data;
+  }
+);
+
+// This code is used to create a service
+export const createService = createAsyncThunk(
+  "appointments/createService",
+  async (serviceData) => {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}doctorService/create-service`,
+      serviceData
+    );
+    return response.data;
+  }
+);
+
+// This code is used to Fetch an appointment by ID
+export const fetchAppointmentByID = createAsyncThunk(
+  "appointments/fetchAppointmentByID",
+  async (id) => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/appointment/${id}`
+    );
+    return response.data;
+  }
+);
+
+// This code is used to Update an appointment
+export const updateAppointment = createAsyncThunk(
+  "appointments/updateAppointment",
+  async ({ id, appointmentData }) => {
+    const response = await axios.put(
+      `${import.meta.env.VITE_API_URL}appoint/update-appointment/${id}`,
+      appointmentData
+    );
+    return response.data;
+  }
+);
+
+// This code is used to Delete an appointment
+export const deleteAppointment = createAsyncThunk(
+  "appointments/deleteAppointment",
+  async (id) => {
+    await axios.delete(
+      `${import.meta.env.VITE_API_URL}appoint/delete-appointment/${id}`
+    );
+    return id; // Return the id to use in the reducer
+  }
+);
+
+// This code is used to fetch cancelled appointments
+export const fetchCancelledAppointments = createAsyncThunk(
+  "appointments/fetchCancelledAppointments",
+  async () => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/cancelled-appointments`
+    );
+    return response.data;
+  }
+);
+
+// This code is used to delete a service
+export const deleteService = createAsyncThunk(
+  "appointments/deleteService",
+  async (id) => {
+    await axios.delete(
+      `${import.meta.env.VITE_API_URL}doctorService/delete-service/${id}`
+    );
+    return id;
+  }
+);
+
 const appointSlice = createSlice({
   name: "appointments",
   initialState,
@@ -279,6 +359,102 @@ const appointSlice = createSlice({
         state.servicesData = action.payload;
       })
       .addCase(fetchAllServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchAllAppointments.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAllAppointments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointments = action.payload;
+      })
+      .addCase(fetchAllAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(createService.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createService.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(createService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchAppointmentByID.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAppointmentByID.fulfilled, (state, action) => {
+        state.loading = false;
+        const existingIndex = state.appointments.findIndex(
+          (appt) => appt._id === action.payload._id
+        );
+        if (existingIndex !== -1) {
+          state.appointments[existingIndex] = action.payload;
+        } else {
+          state.appointments.push(action.payload);
+        }
+      })
+      .addCase(fetchAppointmentByID.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      .addCase(updateAppointment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateAppointment.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedAppointment = action.payload;
+        const index = state.appointments.findIndex(
+          (appt) => appt._id === updatedAppointment._id
+        );
+        if (index !== -1) {
+          state.appointments[index] = updatedAppointment;
+        }
+      })
+      .addCase(updateAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      // Handle deleting an appointment
+      .addCase(deleteAppointment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAppointment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointments = state.appointments.filter(
+          (appt) => appt._id !== action.payload
+        );
+      })
+      .addCase(deleteAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchCancelledAppointments.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchCancelledAppointments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cancelledAppointments = action.payload;
+      })
+      .addCase(fetchCancelledAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteService.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteService.fulfilled, (state, action) => {
+        state.loading = false;
+        state.servicesData = state.servicesData.filter(
+          (service) => service._id !== action.payload
+        );
+      })
+      .addCase(deleteService.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
