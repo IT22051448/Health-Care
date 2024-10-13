@@ -18,7 +18,7 @@ const UpdateOngoingAppointments = () => {
     const fetchAppointment = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/appoint/appointment/${id}`
+          `http://localhost:3000/api/appoint/appointment/${id}`
         );
         setAppointment(response.data);
         setSelectedHospital(response.data.hospital);

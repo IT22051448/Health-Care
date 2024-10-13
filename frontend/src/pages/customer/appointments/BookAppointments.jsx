@@ -30,14 +30,14 @@ const BookAppointments = () => {
   useEffect(() => {
     const fetchHospitals = async () => {
       const response = await axios.get(
-        "http://localhost:5000/api/hospital/get-hospitals"
+        "http://localhost:3000/api/hospital/get-hospitals"
       );
       setHospitals(response.data);
     };
 
     const fetchServicesData = async () => {
       const response = await axios.get(
-        "http://localhost:5000/api/doctorService/get-services"
+        "http://localhost:3000/api/doctorService/get-services"
       );
       setServicesData(response.data);
     };
@@ -106,7 +106,7 @@ const BookAppointments = () => {
     if (!isGovernment && selectedService) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/service/get-service-by-name/${selectedService}`
+          `http://localhost:3000/api/service/get-service-by-name/${selectedService}`
         );
         serviceAmount = response.data.amount * selectedAppointments.length;
       } catch (error) {

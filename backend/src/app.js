@@ -11,7 +11,7 @@ import hospitalRoutes from "./api/routes/hospitalRoutes.js";
 import serviceRoutes from "./api/routes/serviceRoutes.js";
 import doctorServiceRoutes from "./api/routes/doctorServiceRoutes.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 

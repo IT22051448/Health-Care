@@ -11,7 +11,7 @@ const OngoingAppointments = () => {
     const fetchAppointments = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/appoint/all-appointments"
+          "http://localhost:3000/api/appoint/all-appointments"
         );
         console.log("Fetched appointments:", response.data); // Log the fetched data
         setAppointments(response.data);

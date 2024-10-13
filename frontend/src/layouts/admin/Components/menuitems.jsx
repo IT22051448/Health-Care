@@ -14,6 +14,13 @@ export const adminSideBarMenuItems = [
     path: "/admin/appointment",
     icon: <ClockArrowUp />,
   },
+
+  {
+    id: "doctors",
+    label: "Doctors",
+    path: "/admin/doctors",
+    icon: <ClockArrowUp />,
+  },
 ];
 
 // eslint-disable-next-line react/prop-types

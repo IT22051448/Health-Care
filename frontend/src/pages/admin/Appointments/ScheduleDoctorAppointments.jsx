@@ -12,14 +12,14 @@ const ScheduleDoctorAppointments = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       const response = await axios.get(
-        "http://localhost:5000/api/doctor/get-doctors"
+        "http://localhost:3000/api/doctor/get-doctors"
       );
       setDoctors(response.data);
     };
 
     const fetchHospitals = async () => {
       const response = await axios.get(
-        "http://localhost:5000/api/hospital/get-hospitals"
+        "http://localhost:3000/api/hospital/get-hospitals"
       );
       setHospitals(response.data);
     };

@@ -47,7 +47,7 @@ const AppointmentSummary = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/appoint/create-appointment",
+          "http://localhost:3000/api/appoint/create-appointment",
           {
             method: "POST",
             headers: {

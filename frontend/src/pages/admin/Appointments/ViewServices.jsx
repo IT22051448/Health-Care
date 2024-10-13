@@ -12,7 +12,7 @@ const ViewServices = () => {
     const fetchServices = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/doctorService/get-services"
+          "http://localhost:3000/api/doctorService/get-services"
         );
         setServices(response.data);
       } catch (err) {

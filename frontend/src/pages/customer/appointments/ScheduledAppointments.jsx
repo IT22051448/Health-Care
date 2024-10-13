@@ -27,7 +27,7 @@ const ScheduledAppointments = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:5000/api/appoint/scheduled-appointments?userEmail=${userEmail}`
+          `http://localhost:3000/api/appoint/scheduled-appointments?userEmail=${userEmail}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -73,7 +73,7 @@ const ScheduledAppointments = () => {
 
       // Make the API call to the new endpoint
       const response = await axios.put(
-        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
+        `http://localhost:3000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
         {
           newDate: formattedDate, // e.g., "2024-10-05"
           newTimes: newTimes, // Use the first selected time if only one is needed
@@ -131,7 +131,7 @@ const ScheduledAppointments = () => {
 
       // Call the API to cancel the appointment
       const response = await axios.delete(
-        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
+        `http://localhost:3000/api/appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
         {
           data: { reason, description },
         }

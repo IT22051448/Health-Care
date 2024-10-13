@@ -31,7 +31,7 @@ const EditService = () => {
     const fetchService = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/doctorService/get-service/${id}`
+          `http://localhost:3000/api/doctorService/get-service/${id}`
         );
 
         setService(response.data);
