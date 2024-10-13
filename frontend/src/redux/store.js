@@ -1,9 +1,9 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import appointReducer from "./appointSlice/appointSlice";
+import doctorsReducer from "./docSlice/docSlice";
 
 import storage from "redux-persist/lib/storage";
-
 import { persistReducer } from "redux-persist";
 import persistStore from "redux-persist/es/persistStore";
 
@@ -17,6 +17,7 @@ const persistConfig = {
 const reducer = combineReducers({
   auth: authReducer,
   appointments: appointReducer,
+  doctors: doctorsReducer, 
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);
@@ -27,7 +28,6 @@ const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }),
-
   devTools: true,
 });
 

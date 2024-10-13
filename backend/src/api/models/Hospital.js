@@ -15,6 +15,10 @@ const hospitalSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  address: {
+    type: String,
+    default: "..../..../.Srilanka",
+  },
 });
 
 const Hospital = mongoose.model("Hospital", hospitalSchema);
