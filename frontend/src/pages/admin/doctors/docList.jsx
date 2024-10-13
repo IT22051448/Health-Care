@@ -44,8 +44,8 @@ function DocList() {
 
   useEffect(() => {
     if (addDoctorSuccess) {
-      setIsModalOpen(false); // Close modal on success
-      dispatch(resetAddDoctorState()); // Reset the state to handle future submissions
+      setIsModalOpen(false); 
+      dispatch(resetAddDoctorState()); 
     }
   }, [addDoctorSuccess, dispatch]);
 

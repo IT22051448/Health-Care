@@ -1,20 +1,41 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; 
 import { Button } from "@/components/ui/button";
+import { useDispatch } from "react-redux";
+import { deleteDoctor } from "@/redux/docSlice/docSlice";
 
 function DoctorProfile() {
   const location = useLocation();
+  const navigate = useNavigate(); 
+  const dispatch = useDispatch();
   const { doctor } = location.state || {};
 
   if (!doctor) return <div>No doctor data available.</div>;
 
   const handleDelete = () => {
-    // Add logic for deleting the doctor's profile
-    console.log(`Deleting profile for ${doctor.fullName}`);
+    // Show confirmation dialog
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete ${doctor.fullName}'s profile?`
+    );
+
+    if (isConfirmed) {
+      
+      dispatch(deleteDoctor(doctor._id))
+        .unwrap()
+        .then(() => {
+          
+          console.log(`Profile for ${doctor.fullName} deleted successfully.`);
+          navigate("admin/doctors"); 
+        })
+        .catch((error) => {
+         
+          console.error("Error deleting doctor profile:", error);
+        });
+    }
   };
 
   const handleUpdate = () => {
-    // Add logic for updating the doctor's profile
+    
     console.log(`Updating profile for ${doctor.fullName}`);
   };
 
