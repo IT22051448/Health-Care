@@ -10,6 +10,7 @@ const initialState = {
   service: null,
   loading: false,
   error: null,
+  doctors: [],
 };
 
 // This code is used to fetch hospitals

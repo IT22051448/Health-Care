@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchAppointments,
+  fetchDoctors,
   rescheduleAppointment,
   cancelAppointment,
 } from "@/redux/appointSlice/appointSlice";
@@ -18,12 +19,14 @@ const ScheduledAppointments = () => {
   const dispatch = useDispatch();
   const userEmail = useSelector((state) => state.auth.user?.email);
   const appointments =
-    useSelector((state) => state.appointments.appointments) || []; // Ensure it's an array
+    useSelector((state) => state.appointments.appointments) || [];
+  const doctors = useSelector((state) => state.appointments.doctors) || [];
   const loading = useSelector((state) => state.appointments.loading);
 
   useEffect(() => {
     if (userEmail) {
       dispatch(fetchAppointments(userEmail));
+      dispatch(fetchDoctors());
     } else {
       toast({
         title: "Error",
@@ -32,6 +35,11 @@ const ScheduledAppointments = () => {
       });
     }
   }, [dispatch, userEmail]);
+
+  const getDoctorImage = (doctorName) => {
+    const doctor = doctors.find((doc) => doc.fullName === doctorName);
+    return doctor ? doctor.image : null;
+  };
 
   const handleReschedule = (appointment, subAppointment) => {
     setSelectedAppointment(appointment);
@@ -131,20 +139,33 @@ const ScheduledAppointments = () => {
               <h2 className="text-2xl font-semibold text-blue-600 mb-2">
                 Appointment with {appointment.doctor}
               </h2>
-              <p className="text-gray-700 mb-1">
-                <strong>Hospital:</strong> {appointment.hospital}
-              </p>
-              <p className="text-gray-700 mb-1">
-                <strong>Service:</strong> {appointment.service}
-              </p>
-              <p className="text-gray-700 mb-1">
-                <strong>Payment Method:</strong>{" "}
-                {appointment.payment?.method || "Government Hospital"}
-              </p>
-              <p className="text-gray-700 mb-5">
-                <strong>Payment Status:</strong>{" "}
-                {appointment.payment?.status || "Pending"}
-              </p>
+
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex-grow">
+                  <p className="text-gray-700 mb-1">
+                    <strong>Hospital:</strong> {appointment.hospital}
+                  </p>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Service:</strong> {appointment.service}
+                  </p>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Payment Method:</strong>{" "}
+                    {appointment.payment?.method || "Government Hospital"}
+                  </p>
+                  <p className="text-gray-700 mb-5">
+                    <strong>Payment Status:</strong>{" "}
+                    {appointment.payment?.status || "Pending"}
+                  </p>
+                </div>
+
+                {getDoctorImage(appointment.doctor) && (
+                  <img
+                    src={getDoctorImage(appointment.doctor)}
+                    alt={appointment.doctor}
+                    className="w-32 h-32 rounded-full border-2 border-cyan-600 mb-10"
+                  />
+                )}
+              </div>
 
               {appointment.appointments &&
               appointment.appointments.length > 0 ? (

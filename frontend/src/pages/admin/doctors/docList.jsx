@@ -21,8 +21,6 @@ function DocList() {
     dispatch(fetchDoctors());
   }, [dispatch]);
 
-  if (loading) return <div>Loading...</div>;
-
   const handleViewProfile = (doctor) => {
     navigate(`profile/${doctor._id}`, { state: { doctor } });
   };

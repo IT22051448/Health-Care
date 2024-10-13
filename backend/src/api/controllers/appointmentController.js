@@ -332,12 +332,10 @@ export const deleteCancelledAppointment = async (req, res) => {
       .json({ message: "Cancelled appointment deleted successfully" });
   } catch (error) {
     console.error("Error deleting cancelled appointment:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error deleting cancelled appointment",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error deleting cancelled appointment",
+      error: error.message,
+    });
   }
 };
 
@@ -351,11 +349,9 @@ export const deleteAllCancelledAppointments = async (req, res) => {
       .json({ message: "All cancelled appointments deleted successfully" });
   } catch (error) {
     console.error("Error deleting all cancelled appointments:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error deleting all cancelled appointments",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error deleting all cancelled appointments",
+      error: error.message,
+    });
   }
 };
