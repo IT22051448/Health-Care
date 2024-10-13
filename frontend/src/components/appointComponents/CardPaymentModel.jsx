@@ -23,19 +23,17 @@ const CardPaymentModal = ({ onClose, onConfirm }) => {
     const [month, year] = expiry.split("/");
     const currentDate = new Date();
 
-    // Validate month
     if (parseInt(month, 10) < 1 || parseInt(month, 10) > 12) {
       return "Please enter valid expiry date.";
     }
 
-    // Validate year and interpret correctly
     const yearInt = parseInt(year, 10);
     let fullYear;
 
     if (yearInt >= 0 && yearInt <= 50) {
-      fullYear = 2000 + yearInt; // 2000 to 2050
+      fullYear = 2000 + yearInt;
     } else if (yearInt >= 51 && yearInt <= 99) {
-      fullYear = 1900 + yearInt; // 1951 to 1999
+      fullYear = 1900 + yearInt;
     } else {
       return "Please enter valid expiry date.";
     }
@@ -50,9 +48,8 @@ const CardPaymentModal = ({ onClose, onConfirm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError(""); // Reset error message
+    setError("");
 
-    // Basic validation
     if (!/^\d{16}$/.test(cardNumber.replace(/\s/g, ""))) {
       setError("Please enter valid card details");
       return;
@@ -74,8 +71,8 @@ const CardPaymentModal = ({ onClose, onConfirm }) => {
       return;
     }
 
-    onConfirm({ cardNumber, expiryDate, cvv, cardholderName }); // Pass the payment details to the submit function
-    onClose(); // Close modal after submission
+    onConfirm({ cardNumber, expiryDate, cvv, cardholderName });
+    onClose();
   };
 
   return (
@@ -98,7 +95,7 @@ const CardPaymentModal = ({ onClose, onConfirm }) => {
               value={formatCardNumber(cardNumber)}
               onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
               className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-600"
-              maxLength={19} // Allow for spaces
+              maxLength={19}
               placeholder="1234 5678 9012 3456"
             />
           </div>

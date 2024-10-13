@@ -1,39 +1,32 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {
+  deleteService,
+  fetchServices,
+} from "@/redux/appointSlice/appointSlice";
 
 const ViewServices = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/doctorService/get-services"
-        );
-        setServices(response.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const services = useSelector((state) => state.appointments.servicesData);
+  const loading = useSelector((state) => state.appointments.loading);
+  const error = useSelector((state) => state.appointments.error);
 
-    fetchServices();
-  }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      await dispatch(fetchServices());
+    };
+    fetchData();
+  }, [dispatch]);
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
-        await axios.delete(
-          `http://localhost:5000/api/doctorService/delete-service/${id}`
-        );
-        setServices(services.filter((service) => service._id !== id));
+        await dispatch(deleteService(id));
       } catch (err) {
-        setError(err.message);
+        // Handle error if needed
       }
     }
   };
@@ -75,9 +68,13 @@ const ViewServices = () => {
                     {service.hospitalName}
                   </td>
                   <td className="py-1 px-2 border-b text-sm">
-                    {service.services.map((s) => (
-                      <div key={s._id}>{s.serviceType}</div>
-                    ))}
+                    {service.services && service.services.length > 0 ? (
+                      service.services.map((s) => (
+                        <div key={s._id}>{s.serviceType}</div>
+                      ))
+                    ) : (
+                      <div>No services available</div>
+                    )}
                   </td>
                   <td className="py-1 px-2 border-b text-sm">
                     <button

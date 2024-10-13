@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAvailableDates,
+  rescheduleAppointment,
+} from "@/redux/appointSlice/appointSlice";
 
 const RescheduleModal = ({
   open,
@@ -10,20 +14,27 @@ const RescheduleModal = ({
   serviceType,
   selectedSubAppointment,
 }) => {
-  const [availableDates, setAvailableDates] = useState([]);
+  const dispatch = useDispatch();
+  const availableDates = useSelector(
+    (state) => state.appointments.availableDates || []
+  ); // Ensure default to empty array
+  const loading = useSelector((state) => state.appointments.loading);
+  const errorMessage = useSelector((state) => state.appointments.error);
+
   const [filteredDates, setFilteredDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState(""); // Change to single selected time
+  const [selectedTime, setSelectedTime] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (open && doctorName) {
-      fetchAvailableDates(hospitalName, serviceType, doctorName);
+      dispatch(fetchAvailableDates({ hospitalName, serviceType, doctorName }));
     }
-  }, [open, doctorName]);
+  }, [open, doctorName, dispatch]);
 
   useEffect(() => {
-    if (availableDates.length > 0) {
+    if (availableDates && availableDates.length > 0) {
+      // Check for length
       const groupedDates = {};
       availableDates.forEach((dateObj) => {
         const dateKey = new Date(dateObj.date).toLocaleDateString("en-GB");
@@ -39,19 +50,10 @@ const RescheduleModal = ({
       }));
 
       setFilteredDates(uniqueDates);
+    } else {
+      setFilteredDates([]); // Reset if no available dates
     }
   }, [availableDates]);
-
-  const fetchAvailableDates = async (hospital, service, doctor) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/doctorService/get-available-dates?hospitalName=${hospital}&serviceType=${service}&doctorName=${doctor}`
-      );
-      setAvailableDates(response.data);
-    } catch (error) {
-      setError("Error fetching available dates. Please try again.");
-    }
-  };
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedTime) {
@@ -59,36 +61,26 @@ const RescheduleModal = ({
       return;
     }
 
-    // Convert DD/MM/YYYY to YYYY-MM-DD
     const dateParts = selectedDate.split("/");
-    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Change to YYYY-MM-DD
+    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
 
     try {
       const { _id: subAppointmentId, appointmentId } = selectedSubAppointment;
 
-      // Log to debug
-      console.log("Rescheduling:", {
-        subAppointmentId,
-        appointmentId,
-        formattedDate,
-        newTimes: selectedTime, // Use the selected time directly
-      });
-
-      await axios.put(
-        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
-        {
+      await dispatch(
+        rescheduleAppointment({
+          appointmentId,
+          subAppointmentId,
           newDate: formattedDate,
           newTimes: selectedTime,
-        }
+        })
       );
 
       setError("");
       onReschedule(formattedDate, selectedTime);
+      onClose();
     } catch (error) {
-      console.error(
-        "Error rescheduling appointment:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Error rescheduling appointment:", error.message);
       setError("Error rescheduling appointment. Please try again.");
     }
   };
@@ -98,6 +90,8 @@ const RescheduleModal = ({
       <div className="fixed z-50 inset-0 bg-black bg-opacity-30 flex justify-center items-center">
         <div className="bg-white rounded-lg p-6 shadow-lg w-96">
           <h2 className="text-2xl font-bold mb-4">Reschedule Appointment</h2>
+          {loading && <p>Loading available dates...</p>}
+
           {error && <p className="text-red-500">{error}</p>}
           <div className="mb-4">
             <h3 className="text-lg font-semibold mb-2">Select Date:</h3>
@@ -112,7 +106,7 @@ const RescheduleModal = ({
                     }`}
                     onClick={() => {
                       setSelectedDate(dateObj.date);
-                      setSelectedTime(""); // Reset time on new date selection
+                      setSelectedTime("");
                     }}
                   >
                     {dateObj.date}
@@ -131,12 +125,12 @@ const RescheduleModal = ({
                     <button
                       key={time}
                       className={`p-2 rounded border-2 ml-0 m-2 ${
-                        selectedTime === time // Change to single selected time
+                        selectedTime === time
                           ? "bg-blue-500 text-white"
                           : "bg-gray-200"
                       }`}
                       onClick={() => {
-                        setSelectedTime(time); // Set selected time directly
+                        setSelectedTime(time);
                       }}
                     >
                       {time}

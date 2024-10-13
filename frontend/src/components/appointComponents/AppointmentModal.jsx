@@ -11,11 +11,11 @@ const AppointmentModal = ({
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
-    setSelectedTime([]); // Reset time selection
+    setSelectedTime([]);
   };
 
   const handleTimeClick = (time) => {
-    setSelectedTime([time]); // Set selected time to a single value
+    setSelectedTime([time]);
   };
 
   const handleAddAppointment = () => {
@@ -29,10 +29,9 @@ const AppointmentModal = ({
       time: selectedTime,
     };
     setSelectedAppointments((prev) => [...prev, newAppointment]);
-    onClose(); // Close modal
+    onClose();
   };
 
-  // Helper function to format date as DD/MM/YYYY
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
@@ -41,7 +40,7 @@ const AppointmentModal = ({
     return `${day}/${month}/${year}`;
   };
 
-  if (!open) return null; // Early return if modal isn't open
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">

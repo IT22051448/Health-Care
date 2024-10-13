@@ -3,10 +3,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import CardPaymentModal from "@/components/appointComponents/CardPaymentModel";
 import InsurancePaymentModal from "@/components/appointComponents/InsurancePaymentModal";
 import { toast } from "@/hooks/use-toast";
+import { useDispatch } from "react-redux";
+import { createAppointment } from "@/redux/appointSlice/appointSlice";
 
 const AppointmentSummary = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const {
     hospital,
     service,
@@ -41,42 +45,26 @@ const AppointmentSummary = () => {
           amount: isGovernment ? 0 : paymentAmount,
           method: isGovernment ? "government" : paymentMethod,
         },
-        userEmail: userEmail || "", // Ensure userEmail is defined
+        userEmail: userEmail || "",
         AID: AID || "",
       };
 
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/appoint/create-appointment",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(appointmentData),
-          }
-        );
+        const response = await dispatch(
+          createAppointment(appointmentData)
+        ).unwrap();
 
-        if (response.ok) {
-          const data = await response.json();
-          toast({
-            title: "Success",
-            description: "Appointment created successfully!",
-            type: "success",
-          });
-          console.log("Appointment created:", data);
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to create appointment. Please try again.",
-            type: "error",
-          });
-        }
+        toast({
+          title: "Success",
+          description: "Appointment created successfully!",
+          type: "success",
+        });
+        console.log("Appointment created:", response);
       } catch (error) {
         console.error("Error creating appointment:", error);
         toast({
           title: "Error",
-          description: "An error occurred. Please try again later.",
+          description: "Failed to create appointment. Please try again.",
           type: "error",
         });
       }
@@ -109,37 +97,21 @@ const AppointmentSummary = () => {
         method: "Insurance",
         status: "pending",
       },
-      userEmail: userEmail || "", // Ensure userEmail is defined
+      userEmail: userEmail || "",
       AID: AID || "",
     };
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/appoint/create-appointment",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(appointmentData),
-        }
-      );
+      const response = await dispatch(
+        createAppointment(appointmentData)
+      ).unwrap();
 
-      if (response.ok) {
-        const data = await response.json();
-        toast({
-          title: "Success",
-          description: "Appointment created successfully!",
-          type: "success",
-        });
-        console.log("Appointment created:", data);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to create appointment. Please try again.",
-          type: "error",
-        });
-      }
+      toast({
+        title: "Success",
+        description: "Appointment created successfully!",
+        type: "success",
+      });
+      console.log("Appointment created:", response);
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast({
@@ -230,7 +202,7 @@ const AppointmentSummary = () => {
           <div className="flex justify-between mt-8">
             <button
               className="bg-gray-600 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
-              onClick={() => navigate("/patient/appointment")} // Navigate back to Book Appointment
+              onClick={() => navigate("/patient/appointment")}
             >
               Go Back to Book Appointment
             </button>
@@ -270,7 +242,7 @@ const AppointmentSummary = () => {
             <div className="flex justify-between mt-10">
               <button
                 className="bg-gray-600 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition duration-200"
-                onClick={() => navigate("/patient/appointment")} // Navigate back to Book Appointment
+                onClick={() => navigate("/patient/appointment")}
               >
                 Go Back to Book Appointment
               </button>

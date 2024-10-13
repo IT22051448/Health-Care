@@ -1,40 +1,29 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchDoctors,
+  fetchHospitals,
+  fetchAllServices,
+  createService,
+} from "@/redux/appointSlice/appointSlice";
 
 const ScheduleDoctorAppointments = () => {
-  const [doctors, setDoctors] = useState([]);
-  const [hospitals, setHospitals] = useState([]);
-  const [services, setServices] = useState([]);
+  const dispatch = useDispatch();
+  const {
+    doctors,
+    hospitals,
+    servicesData: services,
+  } = useSelector((state) => state.appointments);
+
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedHospital, setSelectedHospital] = useState("");
   const [serviceDetails, setServiceDetails] = useState([]);
 
   useEffect(() => {
-    const fetchDoctors = async () => {
-      const response = await axios.get(
-        "http://localhost:3000/api/doctor/get-doctors"
-      );
-      setDoctors(response.data);
-    };
-
-    const fetchHospitals = async () => {
-      const response = await axios.get(
-        "http://localhost:3000/api/hospital/get-hospitals"
-      );
-      setHospitals(response.data);
-    };
-
-    const fetchServices = async () => {
-      const response = await axios.get(
-        "http://localhost:5000/api/service/get-services"
-      );
-      setServices(response.data);
-    };
-
-    fetchDoctors();
-    fetchHospitals();
-    fetchServices();
-  }, []);
+    dispatch(fetchDoctors());
+    dispatch(fetchHospitals());
+    dispatch(fetchAllServices());
+  }, [dispatch]);
 
   const addService = () => {
     setServiceDetails([
@@ -85,10 +74,7 @@ const ScheduleDoctorAppointments = () => {
       })),
     };
 
-    await axios.post(
-      "http://localhost:5000/api/doctorService/create-service",
-      payload
-    );
+    await dispatch(createService(payload));
     alert("Service created successfully!");
   };
 

@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchHospitals,
+  fetchServicesData,
+  fetchServiceByName,
+} from "@/redux/appointSlice/appointSlice";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import AppointmentModal from "../../../components/appointComponents/AppointmentModal";
+import AppointmentModal from "@/components/appointComponents/AppointmentModal";
 
 const BookAppointments = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [hospitals, setHospitals] = useState([]);
-  const [servicesData, setServicesData] = useState([]);
+
+  const { hospitals, servicesData, loading, error } = useSelector(
+    (state) => state.appointments
+  );
+
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -21,30 +29,13 @@ const BookAppointments = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch user email from Redux store
   const userEmail = useSelector((state) => state.auth.user?.email);
-
-  // Fetch AID from Redux store
   const AID = useSelector((state) => state.auth.user?.AID);
 
   useEffect(() => {
-    const fetchHospitals = async () => {
-      const response = await axios.get(
-        "http://localhost:3000/api/hospital/get-hospitals"
-      );
-      setHospitals(response.data);
-    };
-
-    const fetchServicesData = async () => {
-      const response = await axios.get(
-        "http://localhost:3000/api/doctorService/get-services"
-      );
-      setServicesData(response.data);
-    };
-
-    fetchHospitals();
-    fetchServicesData();
-  }, []);
+    dispatch(fetchHospitals());
+    dispatch(fetchServicesData());
+  }, [dispatch]);
 
   const handleHospitalChange = (e) => {
     const hospital = e.target.value;
@@ -106,7 +97,7 @@ const BookAppointments = () => {
     if (!isGovernment && selectedService) {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/service/get-service-by-name/${selectedService}`
+          `http://localhost:5000/api/service/get-service-by-name/${selectedService}`
         );
         serviceAmount = response.data.amount * selectedAppointments.length;
       } catch (error) {
@@ -122,13 +113,11 @@ const BookAppointments = () => {
       appointments: selectedAppointments,
       isGovernment,
       serviceAmount,
-      userEmail: userEmail || "", // Default to empty string if undefined
-      AID: AID || "", // Default to empty string if undefined
+      userEmail: userEmail || "",
+      AID: AID || "",
     };
 
     console.log("Appointment Data:", appointmentData);
-
-    // Navigate to the appointment summary page and pass data
     navigate("/patient/appointment-summary", { state: appointmentData });
   };
 
@@ -157,7 +146,6 @@ const BookAppointments = () => {
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) => service.services.map((serv) => serv.serviceType));
 
-  // Filter doctors based on selected hospital and service
   const filteredDoctors = servicesData
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) =>
@@ -304,7 +292,6 @@ const BookAppointments = () => {
               value={patientDetails.age}
               onChange={(e) => {
                 const value = e.target.value;
-                // If the input is empty, set it to an empty string, otherwise ensure it's not below 0
                 setPatientDetails({
                   ...patientDetails,
                   age: value === "" ? "" : Math.max(0, value),

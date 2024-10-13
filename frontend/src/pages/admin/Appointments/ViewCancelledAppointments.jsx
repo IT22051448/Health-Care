@@ -1,32 +1,20 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCancelledAppointments } from "@/redux/appointSlice/appointSlice";
 import { useNavigate } from "react-router-dom";
 
 const ViewCancelledAppointments = () => {
-  const [cancelledAppointments, setCancelledAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Initialize the navigate function
+  const dispatch = useDispatch();
+  const { cancelledAppointments, loading, error } = useSelector(
+    (state) => state.appointments
+  );
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCancelledAppointments = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/appoint/cancelled-appointments"
-        );
-        setCancelledAppointments(response.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCancelledAppointments();
-  }, []);
+    dispatch(fetchCancelledAppointments());
+  }, [dispatch]);
 
   if (loading) return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
     <div className="container mx-auto p-6">
@@ -60,7 +48,7 @@ const ViewCancelledAppointments = () => {
           <tbody>
             {cancelledAppointments.length === 0 ? (
               <tr>
-                <td colSpan="9" className="text-center py-2">
+                <td colSpan="10" className="text-center py-2">
                   No cancelled appointments found.
                 </td>
               </tr>
@@ -105,7 +93,7 @@ const ViewCancelledAppointments = () => {
       </div>
       <div className="mt-4">
         <button
-          onClick={() => navigate("/admin/appointment")} // Navigate to the appointment page
+          onClick={() => navigate("/admin/appointment")}
           className="px-4 py-2 bg-blue-500 text-white rounded"
         >
           Go Back
