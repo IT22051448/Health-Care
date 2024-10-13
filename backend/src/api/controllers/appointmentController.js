@@ -169,6 +169,7 @@ export const cancelAppointment = async (req, res) => {
     // Store the canceled appointment in the CancelledAppointment collection
     const cancelledAppointment = new CancelledAppointment({
       AID: appointment.AID,
+      patientName: appointment.patientDetails.fullName,
       userEmail: appointment.userEmail,
       hospital: appointment.hospital,
       service: appointment.service,

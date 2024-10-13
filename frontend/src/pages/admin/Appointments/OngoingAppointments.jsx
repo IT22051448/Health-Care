@@ -35,7 +35,7 @@ const OngoingAppointments = () => {
         <thead>
           <tr>
             <th className="border px-4 py-2">Account ID</th>
-            <th className="border px-4 py-2">Full Name</th>
+            <th className="border px-4 py-2">Patient Name</th>
             <th className="border px-4 py-2">Hospital</th>
             <th className="border px-4 py-2">Service</th>
             <th className="border px-4 py-2">Doctor</th>

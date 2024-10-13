@@ -98,7 +98,7 @@ const ViewCancelledAppointments = () => {
             <tr className="bg-gray-100">
               <th className="py-2 px-4 border-b text-left text-sm">AID</th>
               <th className="py-2 px-4 border-b text-left text-sm">
-                User Email
+                Patient Name
               </th>
               <th className="py-2 px-4 border-b text-left text-sm">Hospital</th>
               <th className="py-2 px-4 border-b text-left text-sm">Service</th>
@@ -133,7 +133,7 @@ const ViewCancelledAppointments = () => {
                     {appointment.AID}
                   </td>
                   <td className="py-2 px-4 border-b text-sm">
-                    {appointment.userEmail}
+                    {appointment.patientName}
                   </td>
                   <td className="py-2 px-4 border-b text-sm">
                     {appointment.hospital}
