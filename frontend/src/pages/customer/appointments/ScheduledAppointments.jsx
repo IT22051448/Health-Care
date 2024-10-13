@@ -55,53 +55,25 @@ const ScheduledAppointments = () => {
     const appointmentId = selectedAppointment._id;
     const subAppointmentId = selectedSubAppointment._id;
 
-      // Make the API call to the new endpoint
-      const response = await axios.put(
-        `http://localhost:5000/api/appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
-        {
-          newDate: formattedDate, // e.g., "2024-10-05"
-          newTimes: newTimes, // Use the first selected time if only one is needed
-        }
-      );
+    const action = await dispatch(
+      rescheduleAppointment({
+        appointmentId,
+        subAppointmentId,
+        newDate: formattedDate,
+        newTimes,
+      })
+    );
 
-      if (response.status === 200) {
-        const updatedAppointments = appointments.map((appt) => {
-          if (appt._id === selectedAppointment._id) {
-            return {
-              ...appt,
-              appointments: appt.appointments.map((subAppt) => {
-                if (subAppt._id === selectedSubAppointment._id) {
-                  return {
-                    ...subAppt,
-                    date: formattedDate, // Update the date here
-                    time: [newTimes], // Update the time here
-                  };
-                }
-                return subAppt;
-              }),
-            };
-          }
-          return appt;
-        });
-
-        setAppointments(updatedAppointments);
-        toast({
-          title: "Success",
-          description: "Appointment rescheduled!",
-          type: "success",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to reschedule appointment.",
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Error rescheduling appointment:", error);
+    if (rescheduleAppointment.fulfilled.match(action)) {
+      toast({
+        title: "Success",
+        description: "Appointment rescheduled!",
+        type: "success",
+      });
+    } else {
       toast({
         title: "Error",
-        description: "An error occurred while rescheduling appointment.",
+        description: "Failed to reschedule appointment.",
         type: "error",
       });
     }
@@ -112,45 +84,25 @@ const ScheduledAppointments = () => {
     const appointmentId = selectedSubAppointment.appointmentId;
     const subAppointmentId = selectedSubAppointment._id;
 
-      // Call the API to cancel the appointment
-      const response = await axios.delete(
-        `http://localhost:5000/api/appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
-        {
-          data: { reason, description },
-        }
-      );
+    const action = await dispatch(
+      cancelAppointment({
+        appointmentId,
+        subAppointmentId,
+        reason,
+        description,
+      })
+    );
 
-      if (response.status === 200) {
-        // Update the appointments state by filtering out the cancelled appointment
-        const updatedAppointments = appointments
-          .map((appt) => {
-            return {
-              ...appt,
-              appointments: appt.appointments.filter(
-                (subAppt) => subAppt._id !== selectedSubAppointment._id
-              ),
-            };
-          })
-          .filter((appt) => appt.appointments.length > 0); // Remove any appointment with no sub-appointments
-
-        setAppointments(updatedAppointments);
-        toast({
-          title: "Success",
-          description: "Appointment cancelled successfully!",
-          type: "success",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to cancel appointment.",
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Error cancelling appointment:", error);
+    if (cancelAppointment.fulfilled.match(action)) {
+      toast({
+        title: "Success",
+        description: "Appointment cancelled successfully!",
+        type: "success",
+      });
+    } else {
       toast({
         title: "Error",
-        description: "An error occurred while cancelling appointment.",
+        description: "Failed to cancel appointment.",
         type: "error",
       });
     }

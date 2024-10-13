@@ -96,10 +96,10 @@ const BookAppointments = () => {
 
     if (!isGovernment && selectedService) {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/api/service/get-service-by-name/${selectedService}`
-        );
-        serviceAmount = response.data.amount * selectedAppointments.length;
+        const serviceDetails = await dispatch(
+          fetchServiceByName(selectedService)
+        ).unwrap();
+        serviceAmount = serviceDetails.amount * selectedAppointments.length;
       } catch (error) {
         console.error("Error fetching service amount:", error);
       }
