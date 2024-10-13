@@ -88,11 +88,14 @@ const ScheduleDoctorAppointments = () => {
       return;
     }
 
-    const invalidServices = serviceDetails.some((service) => {
-      return (
-        !service.serviceType ||
-        service.dates.some((date) => !date.date || !date.times[0])
-      );
+    const invalidServices = serviceDetails.some((service, index) => {
+      const isServiceTypeEmpty = !service.serviceType;
+      const hasInvalidDates = service.dates.some((date, dateIndex) => {
+        const isDateEmpty = !date.date;
+        const isTimeEmpty = !date.times[0]; // Change to validation for specific times
+        return isDateEmpty || isTimeEmpty;
+      });
+      return isServiceTypeEmpty || hasInvalidDates;
     });
 
     if (invalidServices) {
@@ -116,13 +119,21 @@ const ScheduleDoctorAppointments = () => {
       })),
     };
 
-    await dispatch(createService(payload));
-    toast({
-      title: "Success",
-      description: "Service created successfully!",
-      style: { background: "green", color: "white" },
-    });
-    navigate("/admin/appointment");
+    try {
+      await dispatch(createService(payload));
+      toast({
+        title: "Success",
+        description: "Service created successfully!",
+        style: { background: "green", color: "white" },
+      });
+      navigate("/admin/appointment");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create service. Please try again.",
+        style: { background: "red", color: "white" },
+      });
+    }
   };
 
   return (

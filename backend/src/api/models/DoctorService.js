@@ -7,10 +7,11 @@ const serviceSchema = new mongoose.Schema({
     {
       serviceType: { type: String, required: true },
       serviceAmount: { type: Number, required: true },
+
       dates: [
         {
           date: { type: Date, required: true },
-          times: [{ type: String, required: true }], // Array of time strings (e.g., "10:00 AM")
+          times: [{ type: String, required: true }],
         },
       ],
     },
