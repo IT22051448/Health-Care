@@ -301,7 +301,7 @@ const EditService = () => {
         </button>
         <button
           type="submit"
-          className="bg-green-500 text-white py-2 px-4 rounded"
+          className="bg-green-500 text-white py-2 px-4 rounded ml-5"
         >
           Update Service
         </button>

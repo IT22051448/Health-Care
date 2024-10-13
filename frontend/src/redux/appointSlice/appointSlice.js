@@ -244,6 +244,17 @@ export const deleteService = createAsyncThunk(
   }
 );
 
+// This is used to fetch services in ViewServices page
+export const fetchServices = createAsyncThunk(
+  "appointments/fetchServices",
+  async () => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}doctorService/get-services`
+    );
+    return response.data;
+  }
+);
+
 const appointSlice = createSlice({
   name: "appointments",
   initialState,
@@ -455,6 +466,17 @@ const appointSlice = createSlice({
         );
       })
       .addCase(deleteService.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchServices.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.servicesData = action.payload;
+      })
+      .addCase(fetchServices.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
