@@ -6,14 +6,18 @@ import {
   fetchAllServices,
   createService,
 } from "@/redux/appointSlice/appointSlice";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const ScheduleDoctorAppointments = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     doctors,
     hospitals,
     servicesData: services,
   } = useSelector((state) => state.appointments);
+  const { toast } = useToast();
 
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedHospital, setSelectedHospital] = useState("");
@@ -26,15 +30,23 @@ const ScheduleDoctorAppointments = () => {
   }, [dispatch]);
 
   const addService = () => {
-    setServiceDetails([
-      ...serviceDetails,
+    setServiceDetails((prev) => [
+      ...prev,
       { serviceType: "", dates: [{ date: "", times: [""] }] },
     ]);
+    toast({
+      title: "Success",
+      description: "Service added successfully!",
+    });
   };
 
   const removeService = (index) => {
     const updatedServices = serviceDetails.filter((_, i) => i !== index);
     setServiceDetails(updatedServices);
+    toast({
+      title: "Service removed",
+      description: "The selected service has been removed.",
+    });
   };
 
   const handleServiceChange = (index, value) => {
@@ -58,8 +70,38 @@ const ScheduleDoctorAppointments = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!selectedDoctor || !selectedHospital) {
+      toast({
+        title: "Error",
+        description: "Please select both a doctor and a hospital.",
+        style: { background: "red", color: "white" },
+      });
+      return;
+    }
+
     if (serviceDetails.length === 0) {
-      alert("Please add at least one service before submitting.");
+      toast({
+        title: "Error",
+        description: "Please add at least one service.",
+        style: { background: "red", color: "white" },
+      });
+      return;
+    }
+
+    const invalidServices = serviceDetails.some((service) => {
+      return (
+        !service.serviceType ||
+        service.dates.some((date) => !date.date || !date.times[0])
+      );
+    });
+
+    if (invalidServices) {
+      toast({
+        title: "Error",
+        description:
+          "Please ensure all service details (type, date, time) are filled in.",
+        style: { background: "red", color: "white" },
+      });
       return;
     }
 
@@ -75,19 +117,26 @@ const ScheduleDoctorAppointments = () => {
     };
 
     await dispatch(createService(payload));
-    alert("Service created successfully!");
+    toast({
+      title: "Success",
+      description: "Service created successfully!",
+      style: { background: "green", color: "white" },
+    });
+    navigate("/admin/appointment");
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Schedule Doctor Appointments</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Schedule Doctor Appointments
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block mb-2">Doctor Name</label>
+          <label className="block mb-2 font-medium">Doctor Name</label>
           <select
             value={selectedDoctor}
             onChange={(e) => setSelectedDoctor(e.target.value)}
-            className="block w-full border rounded p-2"
+            className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-400"
           >
             <option value="">Select Doctor</option>
             {doctors.map((doctor) => (
@@ -97,12 +146,13 @@ const ScheduleDoctorAppointments = () => {
             ))}
           </select>
         </div>
+
         <div>
-          <label className="block mb-2">Hospital Name</label>
+          <label className="block mb-2 font-medium">Hospital Name</label>
           <select
             value={selectedHospital}
             onChange={(e) => setSelectedHospital(e.target.value)}
-            className="block w-full border rounded p-2"
+            className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-400"
           >
             <option value="">Select Hospital</option>
             {hospitals.map((hospital) => (
@@ -114,14 +164,17 @@ const ScheduleDoctorAppointments = () => {
         </div>
 
         {serviceDetails.map((service, index) => (
-          <div key={index} className="border p-4 mb-4 rounded relative">
-            <h2 className="text-lg font-semibold">Service {index + 1}</h2>
-            <div>
-              <label className="block mb-2">Service Type</label>
+          <div
+            key={index}
+            className="border border-gray-300 p-4 mb-4 rounded-lg shadow-md relative"
+          >
+            <h2 className="text-lg font-semibold mb-2">Service {index + 1}</h2>
+            <div className="mb-4">
+              <label className="block mb-2 font-medium">Service Type</label>
               <select
                 value={service.serviceType}
                 onChange={(e) => handleServiceChange(index, e.target.value)}
-                className="block w-full border rounded p-2"
+                className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-400"
               >
                 <option value="">Select Service</option>
                 {services.map((service) => (
@@ -133,26 +186,26 @@ const ScheduleDoctorAppointments = () => {
             </div>
 
             {service.dates.map((date, dateIndex) => (
-              <div key={dateIndex} className="flex space-x-4 mt-4">
+              <div key={dateIndex} className="flex space-x-4 mb-4">
                 <div className="flex-1">
-                  <label className="block mb-2">Service Date</label>
+                  <label className="block mb-2 font-medium">Service Date</label>
                   <input
                     type="date"
                     value={date.date}
                     onChange={(e) =>
                       handleDateChange(index, dateIndex, e.target.value)
                     }
-                    className="block w-full border rounded p-2"
+                    className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-400"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block mb-2">Service Time</label>
+                  <label className="block mb-2 font-medium">Service Time</label>
                   <select
                     value={date.times[0]}
                     onChange={(e) =>
                       handleTimeChange(index, dateIndex, 0, e.target.value)
                     }
-                    className="block w-full border rounded p-2"
+                    className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring focus:ring-blue-400"
                   >
                     <option value="">Select Time</option>
                     {[...Array(48).keys()].map((i) => {
@@ -175,7 +228,7 @@ const ScheduleDoctorAppointments = () => {
             <button
               type="button"
               onClick={() => removeService(index)}
-              className="absolute top-5 right-4 bg-red-500 text-white rounded p-1 hover:bg-red-700"
+              className="absolute top-5 right-4 bg-red-500 text-white rounded p-2 hover:bg-red-700 shadow-md"
             >
               Remove Service
             </button>
@@ -185,40 +238,42 @@ const ScheduleDoctorAppointments = () => {
         <button
           type="button"
           onClick={addService}
-          className="bg-blue-500 text-white p-2 rounded"
+          className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-700 transition"
         >
           Add Another Service
         </button>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-bold">Added Services</h2>
+          {serviceDetails.map((service, index) => (
+            <div
+              key={index}
+              className="border border-gray-300 p-4 mb-4 rounded-lg shadow-md"
+            >
+              <h3 className="font-semibold">{service.serviceType}</h3>
+              <p>
+                Amount: Rs.
+                {services.find((s) => s.name === service.serviceType)?.amount ||
+                  0}
+              </p>
+              {service.dates.map((date, dateIndex) => (
+                <div key={dateIndex} className="mt-2">
+                  <span>Date: {date.date}</span>
+                  <span> | Times: {date.times.join(", ")}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          className="bg-green-500 text-white p-3 rounded mt-4 shadow-md hover:bg-green-700 transition"
+          onClick={handleSubmit}
+        >
+          Create Services
+        </button>
       </form>
-
-      {/* Display added services in cards */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold">Added Services</h2>
-        {serviceDetails.map((service, index) => (
-          <div key={index} className="border p-4 mb-4 rounded">
-            <h3 className="font-semibold">{service.serviceType}</h3>
-            <p>
-              Amount: Rs.
-              {services.find((s) => s.name === service.serviceType)?.amount ||
-                0}
-            </p>
-            {service.dates.map((date, dateIndex) => (
-              <div key={dateIndex} className="mt-2">
-                <span>Date: {date.date}</span>
-                <span> | Times: {date.times.join(", ")}</span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <button
-        type="submit"
-        className="bg-green-500 text-white p-2 rounded mt-4"
-        onClick={handleSubmit}
-      >
-        Create Services
-      </button>
     </div>
   );
 };

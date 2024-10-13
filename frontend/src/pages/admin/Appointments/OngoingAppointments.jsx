@@ -8,13 +8,22 @@ const OngoingAppointments = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // State to manage the selected appointment
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+
   useEffect(() => {
     dispatch(fetchAllAppointments());
   }, [dispatch]);
 
-  const handleDetailsClick = (id) => {
-    console.log("Navigating to appointment:", id);
-    navigate(`/admin/appointments/${id}`);
+  const handleDetailsClick = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowDetails(true);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedAppointment(null);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -30,7 +39,9 @@ const OngoingAppointments = () => {
             <th className="border px-4 py-2">Hospital</th>
             <th className="border px-4 py-2">Service</th>
             <th className="border px-4 py-2">Doctor</th>
-            <th className="border px-4 py-2">Number of Appointments</th>
+            <th className="border text-center px-4 py-2">
+              Number of Appointments
+            </th>
             <th className="border px-4 py-2">Payment Amount</th>
             <th className="border px-4 py-2">Payment Method</th>
             <th className="border px-4 py-2">Payment Status</th>
@@ -38,54 +49,84 @@ const OngoingAppointments = () => {
           </tr>
         </thead>
         <tbody>
-          {appointments.map((appointment) => {
-            console.log("Processing appointment:", appointment); // Log each appointment being processed
-            return (
-              <tr key={appointment._id}>
-                <td className="border px-4 py-2">{appointment.AID}</td>
-                <td className="border px-4 py-2">
-                  {appointment.patientDetails?.fullName || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.hospital || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.service || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.doctor || "N/A"}
-                </td>
-                <td className="border text-center px-4 py-2">
+          {appointments.map((appointment) => (
+            <tr key={appointment._id}>
+              <td className="border px-4 py-2">{appointment.AID}</td>
+              <td className="border px-4 py-2">
+                {appointment.patientDetails?.fullName || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.hospital || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.service || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.doctor || "N/A"}
+              </td>
+              <td className="border text-center px-4 py-2">
+                <button
+                  className="text-blue-500 hover:underline"
+                  onClick={() => handleDetailsClick(appointment)}
+                >
                   {Array.isArray(appointment.appointments)
                     ? appointment.appointments.length
                     : 0}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.isGovernment
-                    ? "Government Hospital"
-                    : appointment.payment?.amount || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.isGovernment
-                    ? "Government Hospital"
-                    : appointment.payment?.method || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  {appointment.payment?.status || "N/A"}
-                </td>
-                <td className="border px-4 py-2">
-                  <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                    onClick={() => handleDetailsClick(appointment._id)}
-                  >
-                    Details
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
+                </button>
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.isGovernment
+                  ? "Government Hospital"
+                  : appointment.payment?.amount || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.isGovernment
+                  ? "Government Hospital"
+                  : appointment.payment?.method || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                {appointment.payment?.status || "N/A"}
+              </td>
+              <td className="border px-4 py-2">
+                <button
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                  onClick={() =>
+                    navigate(`/admin/appointments/${appointment._id}`)
+                  }
+                >
+                  Update Information
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
+
+      {/* Modal for Appointment Details */}
+      {showDetails && selectedAppointment && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full relative">
+            <h2 className="text-xl font-bold">Appointment Dates & Times</h2>
+
+            <h3 className="mt-4">Appointments:</h3>
+            <ul className="list-disc ml-5 mb-16">
+              {selectedAppointment.appointments.map((appt) => (
+                <li key={appt._id}>
+                  Date: {new Date(appt.date).toLocaleDateString()} - Time:{" "}
+                  {appt.time.join(", ")}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={handleCloseDetails}
+              className="absolute  bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

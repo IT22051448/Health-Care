@@ -8,6 +8,7 @@ import {
   fetchServiceById,
   updateServiceDetails,
 } from "@/redux/appointSlice/appointSlice";
+import { useToast } from "@/hooks/use-toast";
 
 const EditService = () => {
   const [loading, setLoading] = useState(true);
@@ -19,19 +20,13 @@ const EditService = () => {
     },
   ]);
 
-  // State for selected doctor and hospital
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedHospital, setSelectedHospital] = useState("");
-
-  // Error state variables
-  const [doctorError, setDoctorError] = useState("");
-  const [serviceError, setServiceError] = useState("");
-  const [dateError, setDateError] = useState("");
-  const [timeError, setTimeError] = useState("");
 
   const navigate = useNavigate();
   const { id } = useParams();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   const doctors = useSelector((state) => state.appointments.doctors);
   const hospitals = useSelector((state) => state.appointments.hospitals);
@@ -80,18 +75,26 @@ const EditService = () => {
   };
 
   const addService = () => {
-    setServiceDetails([
-      ...serviceDetails,
-      {
-        serviceType: "",
-        dates: [{ date: formatDate(new Date().toISOString()), times: [""] }],
-      },
-    ]);
+    const newService = {
+      serviceType: "",
+      dates: [{ date: formatDate(new Date().toISOString()), times: [""] }],
+    };
+    setServiceDetails([...serviceDetails, newService]);
+    toast({
+      title: "Success",
+      description: "Service added successfully!",
+      variant: "success",
+    });
   };
 
   const removeService = (index) => {
     const updatedServices = serviceDetails.filter((_, i) => i !== index);
     setServiceDetails(updatedServices);
+    toast({
+      title: "Removed",
+      description: "Service removed successfully!",
+      variant: "error",
+    });
   };
 
   const handleServiceChange = (index, value) => {
@@ -115,29 +118,57 @@ const EditService = () => {
   const validateFields = () => {
     let isValid = true;
 
-    setDoctorError("");
-    setServiceError("");
-    setDateError("");
-    setTimeError("");
-
     if (!selectedDoctor) {
-      setDoctorError("Doctor is required.");
+      toast({
+        title: "Error",
+        description: "Doctor cannot be blank.",
+        style: { background: "red", color: "white" },
+      });
       isValid = false;
     }
 
-    serviceDetails.forEach((service, index) => {
+    if (!selectedHospital) {
+      toast({
+        title: "Error",
+        description: "Hospital cannot be blank.",
+        style: { background: "red", color: "white" },
+      });
+      isValid = false;
+    }
+
+    if (serviceDetails.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one service must be added.",
+        style: { background: "red", color: "white" },
+      });
+      isValid = false;
+    }
+
+    serviceDetails.forEach((service) => {
       if (!service.serviceType) {
-        setServiceError(`Service type is required`);
+        toast({
+          title: "Error",
+          description: "Service type cannot be blank.",
+          style: { background: "red", color: "white" },
+        });
         isValid = false;
       }
-
-      service.dates.forEach((date, dateIndex) => {
+      service.dates.forEach((date) => {
         if (!date.date) {
-          setDateError(`Date is required`);
+          toast({
+            title: "Error",
+            description: "Date cannot be blank.",
+            style: { background: "red", color: "white" },
+          });
           isValid = false;
         }
         if (!date.times[0]) {
-          setTimeError(`Time is required`);
+          toast({
+            title: "Error",
+            description: "Time cannot be blank.",
+            style: { background: "red", color: "white" },
+          });
           isValid = false;
         }
       });
@@ -148,7 +179,6 @@ const EditService = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateFields()) {
       return;
     }
@@ -158,8 +188,8 @@ const EditService = () => {
         updateServiceDetails({
           id,
           updatedService: {
-            doctorName: selectedDoctor, // Add selected doctor
-            hospitalName: selectedHospital, // Add selected hospital
+            doctorName: selectedDoctor,
+            hospitalName: selectedHospital,
             services: serviceDetails.map((service) => ({
               serviceType: service.serviceType,
               dates: service.dates.map((date) => ({
@@ -170,11 +200,19 @@ const EditService = () => {
           },
         })
       ).unwrap();
-
-      alert("Service updated successfully!");
+      toast({
+        title: "Success",
+        description: "Service updated successfully!",
+        style: { background: "green", color: "white" },
+      });
       navigate("/admin/view-services");
     } catch (error) {
       setError(error.message);
+      toast({
+        title: "Error",
+        description: "Failed to update service. Please try again.",
+        variant: "error",
+      });
     }
   };
 
@@ -183,19 +221,19 @@ const EditService = () => {
     return `${year}-${month}-${day}`;
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="text-center">Loading...</div>;
+  if (error) return <div className="text-red-500 text-center">{error}</div>;
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
       <h1 className="text-2xl font-bold mb-4">Edit Service</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-2">Doctor Name</label>
+          <label className="block mb-2 font-semibold">Doctor Name</label>
           <select
             value={selectedDoctor}
             onChange={(e) => setSelectedDoctor(e.target.value)}
-            className="block w-full border rounded p-2"
+            className="block w-full border rounded p-2 bg-white shadow"
           >
             <option value="">Select Doctor</option>
             {doctors.map((doctor) => (
@@ -204,14 +242,13 @@ const EditService = () => {
               </option>
             ))}
           </select>
-          {doctorError && <p className="text-red-500">{doctorError}</p>}
         </div>
         <div>
-          <label className="block mb-2">Hospital Name</label>
+          <label className="block mb-2 font-semibold">Hospital Name</label>
           <select
             value={selectedHospital}
             onChange={(e) => setSelectedHospital(e.target.value)}
-            className="block w-full border rounded p-2"
+            className="block w-full border rounded p-2 bg-white shadow"
           >
             <option value="">Select Hospital</option>
             {hospitals.map((hospital) => (
@@ -223,14 +260,17 @@ const EditService = () => {
         </div>
 
         {serviceDetails.map((service, index) => (
-          <div key={index} className="border p-4 mb-4 rounded relative">
+          <div
+            key={index}
+            className="border border-gray-300 p-4 mb-4 rounded-lg relative shadow-sm bg-white"
+          >
             <h2 className="text-lg font-semibold">Service {index + 1}</h2>
             <div>
-              <label className="block mb-2">Service Type</label>
+              <label className="block mb-2 font-semibold">Service Type</label>
               <select
                 value={service.serviceType}
                 onChange={(e) => handleServiceChange(index, e.target.value)}
-                className="block w-full border rounded p-2"
+                className="block w-full border rounded p-2 bg-white shadow"
               >
                 <option value="">Select Service</option>
                 {servicesList.map((service) => (
@@ -239,31 +279,33 @@ const EditService = () => {
                   </option>
                 ))}
               </select>
-              {serviceError && <p className="text-red-500">{serviceError}</p>}
             </div>
 
             {service.dates.map((date, dateIndex) => (
               <div key={dateIndex} className="flex space-x-4 mt-4">
                 <div className="flex-1">
-                  <label className="block mb-2">Service Date</label>
+                  <label className="block mb-2 font-semibold">
+                    Service Date
+                  </label>
                   <input
                     type="date"
                     value={date.date}
                     onChange={(e) =>
                       handleDateChange(index, dateIndex, e.target.value)
                     }
-                    className="block w-full border rounded p-2"
+                    className="block w-full border rounded p-2 bg-white shadow"
                   />
-                  {dateError && <p className="text-red-500">{dateError}</p>}
                 </div>
                 <div className="flex-1">
-                  <label className="block mb-2">Service Time</label>
+                  <label className="block mb-2 font-semibold">
+                    Service Time
+                  </label>
                   <select
                     value={date.times[0]}
                     onChange={(e) =>
                       handleTimeChange(index, dateIndex, 0, e.target.value)
                     }
-                    className="block w-full border rounded p-2"
+                    className="block w-full border rounded p-2 bg-white shadow"
                   >
                     <option value="">Select Time</option>
                     {[...Array(48).keys()].map((i) => {
@@ -279,14 +321,13 @@ const EditService = () => {
                       );
                     })}
                   </select>
-                  {timeError && <p className="text-red-500">{timeError}</p>}
                 </div>
               </div>
             ))}
             <button
               type="button"
               onClick={() => removeService(index)}
-              className="absolute top-4 right-4 text-red-500"
+              className="absolute top-4 right-4 bg-red-500 text-white font-semibold py-1 px-3 rounded shadow hover:bg-red-600 transition duration-200"
             >
               Remove
             </button>
@@ -295,13 +336,13 @@ const EditService = () => {
         <button
           type="button"
           onClick={addService}
-          className="mb-4 bg-blue-500 text-white py-2 px-4 rounded"
+          className="mb-4 bg-blue-500 text-white py-2 px-4 rounded shadow hover:bg-blue-600 transition duration-200 mr-5"
         >
           Add Another Service
         </button>
         <button
           type="submit"
-          className="bg-green-500 text-white py-2 px-4 rounded ml-5"
+          className="bg-green-500 text-white py-2 px-4 rounded shadow hover:bg-green-600 transition duration-200"
         >
           Update Service
         </button>

@@ -60,6 +60,8 @@ const AppointmentSummary = () => {
           type: "success",
         });
         console.log("Appointment created:", response);
+
+        navigate("/patient/scheduled-appoint");
       } catch (error) {
         console.error("Error creating appointment:", error);
         toast({
@@ -112,6 +114,8 @@ const AppointmentSummary = () => {
         type: "success",
       });
       console.log("Appointment created:", response);
+
+      navigate("/patient/scheduled-appoint");
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast({

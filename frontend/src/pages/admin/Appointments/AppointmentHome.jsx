@@ -8,7 +8,7 @@ const AppointmentHome = () => {
     {
       title: "Create Doctor Appointments",
       description:
-        "Schedule Appointments For Doctors based on Hospital and Services",
+        "Schedule appointments for doctors based on hospital and services.",
       route: "/admin/doc-appointment",
     },
     {
@@ -29,15 +29,17 @@ const AppointmentHome = () => {
   ];
 
   return (
-    <div className="bg-gray-100 min-h-screen p-6">
-      <header className="bg-blue-600 text-white p-2 rounded-lg mb-6">
-        <h1 className="text-2xl font-bold text-center">Manage Appointments</h1>
+    <div className="bg-gradient-to-r from-blue-500 to-blue-300 min-h-screen p-8">
+      <header className="bg-white shadow-md rounded-lg mb-8 p-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800">
+          Manage Appointments
+        </h1>
       </header>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-80 mt-10">
-        {cards.map((card) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {cards.map((card, index) => (
           <div
             key={card.title}
-            className="bg-white shadow-lg rounded-lg p-6 border-blue-600 border-4 hover:bg-yellow-50 cursor-pointer transition-shadow duration-300"
+            className="bg-white shadow-lg rounded-lg p-6 transition-transform transform hover:scale-105 cursor-pointer border-l-4 border-blue-500 hover:border-yellow-500"
             onClick={() => navigate(card.route)}
           >
             <h2 className="text-xl font-semibold text-gray-800 mb-2">

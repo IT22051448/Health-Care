@@ -9,11 +9,14 @@ import {
   updateAppointment,
   deleteAppointment,
 } from "@/redux/appointSlice/appointSlice";
+import { useToast } from "@/hooks/use-toast";
+import ConfirmationModal from "@/components/appointComponents/ConfirmationModal";
 
 const UpdateOngoingAppointments = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const appointment = useSelector((state) =>
     state.appointments.appointments.find((appt) => appt._id === id)
@@ -26,6 +29,8 @@ const UpdateOngoingAppointments = () => {
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [confirmDelete, setConfirmDelete] = useState(false); // Confirmation state
 
   useEffect(() => {
     dispatch(fetchHospitals());
@@ -52,7 +57,6 @@ const UpdateOngoingAppointments = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Update nested patientDetails for fullName and age
     if (name === "fullName" || name === "age") {
       setFormData((prev) => ({
         ...prev,
@@ -62,7 +66,6 @@ const UpdateOngoingAppointments = () => {
         },
       }));
     } else {
-      // For other fields, update directly
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -73,21 +76,55 @@ const UpdateOngoingAppointments = () => {
       await dispatch(
         updateAppointment({ id, appointmentData: formData })
       ).unwrap();
-      alert("Appointment updated successfully!");
+      toast({
+        title: "Success",
+        description: "Appointment Updated Successfully",
+        style: { background: "green", color: "white" },
+      });
       navigate("/admin/ongoing-appointments");
     } catch (error) {
-      console.error("Error updating appointment:", error);
+      toast({
+        title: "Error",
+        description: "Error Updating Appointment.",
+        style: { background: "red", color: "white" },
+      });
     }
   };
 
   const handleDelete = async () => {
-    try {
-      await dispatch(deleteAppointment(id)).unwrap();
-      alert("Appointment deleted successfully!");
-      navigate("/admin/ongoing-appointments");
-    } catch (error) {
-      console.error("Error deleting appointment:", error);
+    if (confirmDelete) {
+      try {
+        await dispatch(deleteAppointment(id)).unwrap();
+        toast({
+          title: "Success",
+          description: "Appointment deleted successfully!",
+          style: { background: "green", color: "white" },
+        });
+        navigate("/admin/ongoing-appointments");
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Error Deleting Appointment",
+          style: { background: "red", color: "white" },
+        });
+      } finally {
+        setConfirmDelete(false);
+        setIsModalOpen(false);
+      }
     }
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    setConfirmDelete(true);
+    handleDelete();
   };
 
   const handleAppointmentChange = (index, field, value) => {
@@ -102,11 +139,13 @@ const UpdateOngoingAppointments = () => {
   if (!appointment) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6">Update Appointments</h1>
+    <div className="container mx-auto mt-10 p-6 bg-white rounded-md shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-blue-600">
+        Update Appointments
+      </h1>
       <form onSubmit={handleEditSubmit} className="space-y-6">
         {/* Patient Details Section */}
-        <div className="border p-4 rounded-md shadow-md mb-6">
+        <div className="border p-4 rounded-md shadow-md mb-6 bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Patient Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -118,7 +157,7 @@ const UpdateOngoingAppointments = () => {
                 name="fullName"
                 value={formData.patientDetails?.fullName || ""}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               />
             </div>
             <div>
@@ -130,7 +169,7 @@ const UpdateOngoingAppointments = () => {
                 name="age"
                 value={formData.patientDetails?.age || ""}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               />
             </div>
             <div className="col-span-2">
@@ -178,7 +217,7 @@ const UpdateOngoingAppointments = () => {
         </div>
 
         {/* Service Details Section */}
-        <div className="border p-4 rounded-md shadow-md mb-6">
+        <div className="border p-4 rounded-md shadow-md mb-6 bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Service Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -192,7 +231,7 @@ const UpdateOngoingAppointments = () => {
                   setSelectedHospital(hospitalName);
                   setFormData({ ...formData, hospital: hospitalName });
                 }}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               >
                 <option value="">Select Hospital</option>
                 {hospitals.map((hospital) => (
@@ -213,7 +252,7 @@ const UpdateOngoingAppointments = () => {
                   setSelectedService(serviceName);
                   setFormData({ ...formData, service: serviceName });
                 }}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
                 disabled={!selectedHospital}
               >
                 <option value="">Select Service</option>
@@ -233,7 +272,7 @@ const UpdateOngoingAppointments = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, doctor: e.target.value })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               >
                 <option value="">Select Doctor</option>
                 {doctors.map((doctor) => (
@@ -260,7 +299,7 @@ const UpdateOngoingAppointments = () => {
         </div>
 
         {/* Appointments Section */}
-        <div className="border p-4 rounded-md shadow-md mb-6">
+        <div className="border p-4 rounded-md shadow-md mb-6 bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Appointments</h2>
           {formData.appointments.map((apt, index) => (
             <div
@@ -277,7 +316,7 @@ const UpdateOngoingAppointments = () => {
                   onChange={(e) =>
                     handleAppointmentChange(index, "date", e.target.value)
                   }
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-white"
                 />
               </div>
               <div>
@@ -290,7 +329,7 @@ const UpdateOngoingAppointments = () => {
                   onChange={(e) =>
                     handleAppointmentChange(index, "time", [e.target.value])
                   }
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-white"
                 />
               </div>
             </div>
@@ -298,7 +337,7 @@ const UpdateOngoingAppointments = () => {
         </div>
 
         {/* Payment Details Section */}
-        <div className="border p-4 rounded-md shadow-md mb-6">
+        <div className="border p-4 rounded-md shadow-md mb-6 bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -318,7 +357,7 @@ const UpdateOngoingAppointments = () => {
                   })
                 }
                 disabled={formData.isGovernment}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               >
                 <option value="Card Payment">Card Payment</option>
                 <option value="Cash">Cash</option>
@@ -344,7 +383,7 @@ const UpdateOngoingAppointments = () => {
                   })
                 }
                 disabled={formData.isGovernment}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               />
               {formData.isGovernment && (
                 <p className="text-gray-500">
@@ -364,7 +403,7 @@ const UpdateOngoingAppointments = () => {
                     payment: { ...formData.payment, status: e.target.value },
                   })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-white"
               >
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
@@ -383,13 +422,21 @@ const UpdateOngoingAppointments = () => {
           </button>
           <button
             type="button"
-            onClick={handleDelete}
+            onClick={handleOpenModal}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200"
           >
             Delete Appointment
           </button>
         </div>
       </form>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        message="Are you sure you want to delete this appointment?"
+      />
     </div>
   );
 };
