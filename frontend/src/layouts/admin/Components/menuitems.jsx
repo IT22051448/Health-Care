@@ -1,4 +1,11 @@
-import { LayoutDashboard, ClockArrowUp } from "lucide-react";
+import {
+  LayoutDashboard,
+  ClockArrowUp,
+  Hospital,
+  BriefcaseMedical,
+  HeartPulse,
+  Stethoscope,
+} from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const adminSideBarMenuItems = [
@@ -13,6 +20,25 @@ export const adminSideBarMenuItems = [
     label: "Appointment DashBoard",
     path: "/admin/appointment",
     icon: <ClockArrowUp />,
+  },
+
+  {
+    id: "doctors",
+    label: "Doctors",
+    path: "/admin/doctors",
+    icon: <Stethoscope />,
+  },
+  {
+    id: "hospitals",
+    label: "Hospitals",
+    path: "/admin/hospitals",
+    icon: <Hospital />,
+  },
+  {
+    id: "services",
+    label: "Medical Services",
+    path: "/admin/med-services",
+    icon: <HeartPulse />,
   },
 ];
 
