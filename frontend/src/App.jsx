@@ -28,6 +28,7 @@ import UpdateOngoingAppointments from "./pages/admin/Appointments/UpdateOngoingA
 import DocList from "./pages/admin/doctors/docList";
 import HospitalList from "./pages/admin/hospitals/hospitalList";
 import MedServices from "./pages/admin/medServices/MedServices";
+import DoctorProfile from "./pages/admin/doctors/DoctorProfile";
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -79,6 +80,7 @@ function App() {
           />
 
           <Route path="doctors" element={<DocList />} />
+          <Route path="doctors/profile/:id" element={<DoctorProfile />} />
           <Route path="hospitals" element={<HospitalList />} />
           <Route path="med-services" element={<MedServices />} />
         </Route>
