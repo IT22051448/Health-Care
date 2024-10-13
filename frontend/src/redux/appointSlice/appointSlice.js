@@ -13,13 +13,14 @@ const initialState = {
   doctors: [],
 };
 
+// Base URL for API requests
+const API_URL = process.env.VITE_API_URL || "http://localhost:5000/api/";
+
 // This code is used to fetch hospitals
 export const fetchHospitals = createAsyncThunk(
   "appointments/fetchHospitals",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}hospital/get-hospitals`
-    );
+    const response = await axios.get(`${API_URL}hospital/get-hospitals`);
     return response.data;
   }
 );
@@ -28,9 +29,7 @@ export const fetchHospitals = createAsyncThunk(
 export const fetchDoctors = createAsyncThunk(
   "appointments/fetchDoctors",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}doctor/get-doctors`
-    );
+    const response = await axios.get(`${API_URL}doctor/get-doctors`);
     return response.data;
   }
 );
@@ -39,9 +38,7 @@ export const fetchDoctors = createAsyncThunk(
 export const fetchServicesData = createAsyncThunk(
   "appointments/fetchServicesData",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}doctorService/get-services`
-    );
+    const response = await axios.get(`${API_URL}doctorService/get-services`);
     return response.data;
   }
 );
@@ -51,7 +48,7 @@ export const fetchServiceById = createAsyncThunk(
   "appointments/fetchServiceById",
   async (id) => {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}doctorService/get-service/${id}`
+      `${API_URL}doctorService/get-service/${id}`
     );
     return response.data;
   }
@@ -62,7 +59,7 @@ export const updateServiceDetails = createAsyncThunk(
   "appointments/updateServiceDetails",
   async ({ id, updatedService }) => {
     const response = await axios.put(
-      `${import.meta.env.VITE_API_URL}doctorService/update-service/${id}`,
+      `${API_URL}doctorService/update-service/${id}`,
       updatedService
     );
     return response.data;
@@ -74,9 +71,7 @@ export const fetchServiceByName = createAsyncThunk(
   "appointments/fetchServiceByName",
   async (serviceName) => {
     const response = await axios.get(
-      `${
-        import.meta.env.VITE_API_URL
-      }service/get-service-by-name/${serviceName}`
+      `${API_URL}service/get-service-by-name/${serviceName}`
     );
     return response.data;
   }
@@ -87,9 +82,7 @@ export const fetchAppointments = createAsyncThunk(
   "appointments/fetchAppointments",
   async (userEmail) => {
     const response = await axios.get(
-      `${
-        import.meta.env.VITE_API_URL
-      }appoint/scheduled-appointments?userEmail=${userEmail}`,
+      `${API_URL}appoint/scheduled-appointments?userEmail=${userEmail}`,
       { withCredentials: true }
     );
     return response.data;
@@ -101,7 +94,7 @@ export const createAppointment = createAsyncThunk(
   "appointments/createAppointment",
   async (appointmentData) => {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}appoint/create-appointment`,
+      `${API_URL}appoint/create-appointment`,
       appointmentData,
       { withCredentials: true }
     );
@@ -114,13 +107,8 @@ export const rescheduleAppointment = createAsyncThunk(
   "appointments/rescheduleAppointment",
   async ({ appointmentId, subAppointmentId, newDate, newTimes }) => {
     const response = await axios.put(
-      `${
-        import.meta.env.VITE_API_URL
-      }appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
-      {
-        newDate,
-        newTimes,
-      }
+      `${API_URL}appoint/reschedule-appointment/${appointmentId}/${subAppointmentId}`,
+      { newDate, newTimes }
     );
     return response.data;
   }
@@ -131,9 +119,7 @@ export const cancelAppointment = createAsyncThunk(
   "appointments/cancelAppointment",
   async ({ appointmentId, subAppointmentId, reason, description }) => {
     const response = await axios.delete(
-      `${
-        import.meta.env.VITE_API_URL
-      }appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
+      `${API_URL}appoint/cancel-appointment/${appointmentId}/${subAppointmentId}`,
       {
         data: { reason, description },
       }
@@ -147,9 +133,7 @@ export const fetchAvailableDates = createAsyncThunk(
   "appointments/fetchAvailableDates",
   async ({ hospitalName, serviceType, doctorName }) => {
     const response = await axios.get(
-      `${
-        import.meta.env.VITE_API_URL
-      }doctorService/get-available-dates?hospitalName=${hospitalName}&serviceType=${serviceType}&doctorName=${doctorName}`
+      `${API_URL}doctorService/get-available-dates?hospitalName=${hospitalName}&serviceType=${serviceType}&doctorName=${doctorName}`
     );
     return response.data;
   }
@@ -159,9 +143,7 @@ export const fetchAvailableDates = createAsyncThunk(
 export const fetchAllServices = createAsyncThunk(
   "appointments/fetchAllServices",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}service/get-services`
-    );
+    const response = await axios.get(`${API_URL}service/get-services`);
     return response.data;
   }
 );
@@ -170,9 +152,7 @@ export const fetchAllServices = createAsyncThunk(
 export const fetchAllAppointments = createAsyncThunk(
   "appointments/fetchAllAppointments",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}appoint/all-appointments`
-    );
+    const response = await axios.get(`${API_URL}appoint/all-appointments`);
     return response.data;
   }
 );
@@ -182,43 +162,39 @@ export const createService = createAsyncThunk(
   "appointments/createService",
   async (serviceData) => {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}doctorService/create-service`,
+      `${API_URL}doctorService/create-service`,
       serviceData
     );
     return response.data;
   }
 );
 
-// This code is used to Fetch an appointment by ID
+// This code is used to fetch an appointment by ID
 export const fetchAppointmentByID = createAsyncThunk(
   "appointments/fetchAppointmentByID",
   async (id) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}appoint/appointment/${id}`
-    );
+    const response = await axios.get(`${API_URL}appoint/appointment/${id}`);
     return response.data;
   }
 );
 
-// This code is used to Update an appointment
+// This code is used to update an appointment
 export const updateAppointment = createAsyncThunk(
   "appointments/updateAppointment",
   async ({ id, appointmentData }) => {
     const response = await axios.put(
-      `${import.meta.env.VITE_API_URL}appoint/update-appointment/${id}`,
+      `${API_URL}appoint/update-appointment/${id}`,
       appointmentData
     );
     return response.data;
   }
 );
 
-// This code is used to Delete an appointment
+// This code is used to delete an appointment
 export const deleteAppointment = createAsyncThunk(
   "appointments/deleteAppointment",
   async (id) => {
-    await axios.delete(
-      `${import.meta.env.VITE_API_URL}appoint/delete-appointment/${id}`
-    );
+    await axios.delete(`${API_URL}appoint/delete-appointment/${id}`);
     return id; // Return the id to use in the reducer
   }
 );
@@ -228,7 +204,7 @@ export const fetchCancelledAppointments = createAsyncThunk(
   "appointments/fetchCancelledAppointments",
   async () => {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}appoint/cancelled-appointments`
+      `${API_URL}appoint/cancelled-appointments`
     );
     return response.data;
   }
@@ -238,9 +214,7 @@ export const fetchCancelledAppointments = createAsyncThunk(
 export const deleteService = createAsyncThunk(
   "appointments/deleteService",
   async (id) => {
-    await axios.delete(
-      `${import.meta.env.VITE_API_URL}doctorService/delete-service/${id}`
-    );
+    await axios.delete(`${API_URL}doctorService/delete-service/${id}`);
     return id;
   }
 );
@@ -249,9 +223,7 @@ export const deleteService = createAsyncThunk(
 export const fetchServices = createAsyncThunk(
   "appointments/fetchServices",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}doctorService/get-services`
-    );
+    const response = await axios.get(`${API_URL}doctorService/get-services`);
     return response.data;
   }
 );
@@ -260,11 +232,7 @@ export const fetchServices = createAsyncThunk(
 export const deleteCancelledAppointment = createAsyncThunk(
   "appointments/deleteCancelledAppointment",
   async (id) => {
-    await axios.delete(
-      `${
-        import.meta.env.VITE_API_URL
-      }appoint/delete-cancelled-appointments/${id}`
-    );
+    await axios.delete(`${API_URL}appoint/delete-cancelled-appointments/${id}`);
     return id;
   }
 );
@@ -273,9 +241,7 @@ export const deleteCancelledAppointment = createAsyncThunk(
 export const deleteAllCancelledAppointments = createAsyncThunk(
   "appointments/deleteAllCancelledAppointments",
   async () => {
-    await axios.delete(
-      `${import.meta.env.VITE_API_URL}appoint/delete-cancelled-appointments`
-    );
+    await axios.delete(`${API_URL}appoint/delete-cancelled-appointments`);
   }
 );
 
