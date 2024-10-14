@@ -22,17 +22,35 @@ export const addDoctor = createAsyncThunk(
   }
 );
 
+export const deleteDoctor = createAsyncThunk(
+  "doctor/deleteDoctor",
+  async (doctorId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3000/api/doctor/delete-doctor/${doctorId}`
+      );
+      return response.data; 
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const doctorsSlice = createSlice({
   name: "doctors",
   initialState: {
     doctors: [],
     loading: false,
     error: null,
-    addDoctorSuccess: false, // track doctor addition success
+    addDoctorSuccess: false,
+    deleteDoctorSuccess: false, 
   },
   reducers: {
     resetAddDoctorState: (state) => {
-      state.addDoctorSuccess = false; 
+      state.addDoctorSuccess = false;
+    },
+    resetDeleteDoctorState: (state) => {
+      state.deleteDoctorSuccess = false; 
     },
   },
   extraReducers: (builder) => {
@@ -42,15 +60,31 @@ const doctorsSlice = createSlice({
       })
       .addCase(addDoctor.fulfilled, (state, action) => {
         state.loading = false;
-        state.doctors.push(action.payload.data); // Add new doctor to the list
-        state.addDoctorSuccess = true; 
+        state.doctors.push(action.payload.data); 
+        state.addDoctorSuccess = true;
       })
       .addCase(addDoctor.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteDoctor.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteDoctor.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        state.doctors = state.doctors.filter(
+          (doctor) => doctor._id !== action.meta.arg 
+        );
+        state.deleteDoctorSuccess = true;
+      })
+      .addCase(deleteDoctor.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { resetAddDoctorState } = doctorsSlice.actions;
+export const { resetAddDoctorState, resetDeleteDoctorState } =
+  doctorsSlice.actions;
 export default doctorsSlice.reducer;
