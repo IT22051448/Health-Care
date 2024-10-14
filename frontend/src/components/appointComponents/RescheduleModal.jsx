@@ -14,27 +14,40 @@ const RescheduleModal = ({
   serviceType,
   selectedSubAppointment,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); // Hook to dispatch actions to the Redux store
   const availableDates = useSelector(
     (state) => state.appointments.availableDates || []
-  ); // Ensure default to empty array
-  const loading = useSelector((state) => state.appointments.loading);
-  const errorMessage = useSelector((state) => state.appointments.error);
+  ); // Retrieve available dates from the Redux store
+  const loading = useSelector((state) => state.appointments.loading); // Loading state
+  const errorMessage = useSelector((state) => state.appointments.error); // Error message from the store
 
-  const [filteredDates, setFilteredDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [error, setError] = useState("");
+  // State management for dates and times
+  const [filteredDates, setFilteredDates] = useState([]); // Filtered available dates
+  const [selectedDate, setSelectedDate] = useState(""); // Selected date
+  const [selectedTime, setSelectedTime] = useState(""); // Selected time
+  const [error, setError] = useState(""); // Error state for form validation
 
+  // Fetch available dates when the modal opens
   useEffect(() => {
-    if (open && doctorName) {
-      dispatch(fetchAvailableDates({ hospitalName, serviceType, doctorName }));
-    }
-  }, [open, doctorName, dispatch]);
+    const fetchDates = async () => {
+      if (open && doctorName) {
+        try {
+          await dispatch(
+            fetchAvailableDates({ hospitalName, serviceType, doctorName })
+          ).unwrap();
+        } catch (error) {
+          console.error("Error fetching available dates:", error.message);
+          setError("Failed to fetch available dates. Please try again.");
+        }
+      }
+    };
 
+    fetchDates();
+  }, [open, doctorName, dispatch, hospitalName, serviceType]);
+
+  // Process available dates and group them for display
   useEffect(() => {
     if (availableDates && availableDates.length > 0) {
-      // Check for length
       const groupedDates = {};
       availableDates.forEach((dateObj) => {
         const dateKey = new Date(dateObj.date).toLocaleDateString("en-GB");
@@ -46,27 +59,30 @@ const RescheduleModal = ({
 
       const uniqueDates = Object.keys(groupedDates).map((date) => ({
         date,
-        times: [...new Set(groupedDates[date])],
+        times: [...new Set(groupedDates[date])], // Remove duplicate times
       }));
 
-      setFilteredDates(uniqueDates);
+      setFilteredDates(uniqueDates); // Update the state with unique dates and times
     } else {
       setFilteredDates([]); // Reset if no available dates
     }
   }, [availableDates]);
 
+  // Handle form submission for rescheduling
   const handleSubmit = async () => {
     if (!selectedDate || !selectedTime) {
-      setError("Please select a date and a time.");
+      setError("Please select a date and a time."); // Validate input
       return;
     }
 
+    // Format the selected date for API
     const dateParts = selectedDate.split("/");
     const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
 
     try {
       const { _id: subAppointmentId, appointmentId } = selectedSubAppointment;
 
+      // Dispatch action to reschedule the appointment
       await dispatch(
         rescheduleAppointment({
           appointmentId,
@@ -76,12 +92,12 @@ const RescheduleModal = ({
         })
       );
 
-      setError("");
-      onReschedule(formattedDate, selectedTime);
-      onClose();
+      setError(""); // Clear error message
+      onReschedule(formattedDate, selectedTime); // Notify parent component of the successful reschedule
+      onClose(); // Close the modal
     } catch (error) {
-      console.error("Error rescheduling appointment:", error.message);
-      setError("Error rescheduling appointment. Please try again.");
+      console.error("Error rescheduling appointment:", error.message); // Log error for debugging
+      setError("Error rescheduling appointment. Please try again."); // Set error message
     }
   };
 
@@ -90,9 +106,10 @@ const RescheduleModal = ({
       <div className="fixed z-50 inset-0 bg-black bg-opacity-30 flex justify-center items-center">
         <div className="bg-white rounded-lg p-6 shadow-lg w-96">
           <h2 className="text-2xl font-bold mb-4">Reschedule Appointment</h2>
-          {loading && <p>Loading available dates...</p>}
-
-          {error && <p className="text-red-500">{error}</p>}
+          {loading && <p>Loading available dates...</p>}{" "}
+          {/* Loading state message */}
+          {error && <p className="text-red-500">{error}</p>}{" "}
+          {/* Display error messages */}
           <div className="mb-4">
             <h3 className="text-lg font-semibold mb-2">Select Date:</h3>
             <div className="flex flex-wrap">
@@ -105,11 +122,11 @@ const RescheduleModal = ({
                         : "bg-gray-200 border-gray-300"
                     }`}
                     onClick={() => {
-                      setSelectedDate(dateObj.date);
-                      setSelectedTime("");
+                      setSelectedDate(dateObj.date); // Update selected date
+                      setSelectedTime(""); // Reset selected time
                     }}
                   >
-                    {dateObj.date}
+                    {dateObj.date} {/* Display the date */}
                   </div>
                 </div>
               ))}
@@ -130,10 +147,10 @@ const RescheduleModal = ({
                           : "bg-gray-200"
                       }`}
                       onClick={() => {
-                        setSelectedTime(time);
+                        setSelectedTime(time); // Update selected time
                       }}
                     >
-                      {time}
+                      {time} {/* Display the time */}
                     </button>
                   ))}
               </div>
@@ -142,13 +159,13 @@ const RescheduleModal = ({
           <div className="flex justify-end mt-6">
             <button
               className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              onClick={handleSubmit}
+              onClick={handleSubmit} // Submit the form
             >
               Reschedule
             </button>
             <button
               className="bg-gray-400 text-white font-bold py-2 px-4 rounded hover:bg-gray-500 ml-2"
-              onClick={onClose}
+              onClick={onClose} // Close the modal
             >
               Cancel
             </button>
@@ -159,4 +176,4 @@ const RescheduleModal = ({
   );
 };
 
-export default RescheduleModal;
+export default RescheduleModal; // Export the component for use in other parts of the application

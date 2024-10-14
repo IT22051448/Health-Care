@@ -11,61 +11,68 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const EditService = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // State to manage loading status
+  const [error, setError] = useState(null); // State to manage error messages
   const [serviceDetails, setServiceDetails] = useState([
+    // State for service details
     {
       serviceType: "",
       dates: [{ date: new Date().toISOString().split("T")[0], times: [""] }],
     },
   ]);
 
-  const [selectedDoctor, setSelectedDoctor] = useState("");
-  const [selectedHospital, setSelectedHospital] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState(""); // State for selected doctor
+  const [selectedHospital, setSelectedHospital] = useState(""); // State for selected hospital
 
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Extract service ID from URL parameters
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  // Redux state selectors
   const doctors = useSelector((state) => state.appointments.doctors);
   const hospitals = useSelector((state) => state.appointments.hospitals);
   const servicesList = useSelector((state) => state.appointments.servicesData);
   const service = useSelector((state) => state.appointments.service);
 
+  // Fetch data when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch the service by ID, doctors, hospitals, and all services
         await dispatch(fetchServiceById(id)).unwrap();
         await dispatch(fetchDoctors()).unwrap();
         await dispatch(fetchHospitals()).unwrap();
         await dispatch(fetchAllServices()).unwrap();
       } catch (err) {
+        // Handle any errors that occur during data fetching
         setError(err.message);
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false once data fetching is complete
       }
     };
 
     fetchData();
   }, [id, dispatch]);
 
+  // Populate service details after fetching
   useEffect(() => {
     if (service) {
       setServiceDetails(
         service.services.map((service) => ({
           serviceType: service.serviceType,
           dates: service.dates.map((date) => ({
-            date: formatDate(date.date),
+            date: formatDate(date.date), // Format the date for display
             times: date.times,
           })),
         }))
       );
-      setSelectedDoctor(service.doctorName || "");
-      setSelectedHospital(service.hospitalName || "");
+      setSelectedDoctor(service.doctorName || ""); // Set selected doctor from service
+      setSelectedHospital(service.hospitalName || ""); // Set selected hospital from service
     }
   }, [service]);
 
+  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -74,6 +81,7 @@ const EditService = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // Add a new service to the details
   const addService = () => {
     const newService = {
       serviceType: "",
@@ -87,6 +95,7 @@ const EditService = () => {
     });
   };
 
+  // Remove a service from the details
   const removeService = (index) => {
     const updatedServices = serviceDetails.filter((_, i) => i !== index);
     setServiceDetails(updatedServices);
@@ -97,24 +106,28 @@ const EditService = () => {
     });
   };
 
+  // Handle changes to the service type
   const handleServiceChange = (index, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[index].serviceType = value;
     setServiceDetails(updatedServices);
   };
 
+  // Handle changes to the date for a service
   const handleDateChange = (serviceIndex, dateIndex, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[serviceIndex].dates[dateIndex].date = value;
     setServiceDetails(updatedServices);
   };
 
+  // Handle changes to the time for a service
   const handleTimeChange = (serviceIndex, dateIndex, timeIndex, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[serviceIndex].dates[dateIndex].times[timeIndex] = value;
     setServiceDetails(updatedServices);
   };
 
+  // Validate form fields before submission
   const validateFields = () => {
     let isValid = true;
 
@@ -177,13 +190,15 @@ const EditService = () => {
     return isValid;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
     if (!validateFields()) {
-      return;
+      return; // Stop submission if validation fails
     }
 
     try {
+      // Dispatch action to update service details
       await dispatch(
         updateServiceDetails({
           id,
@@ -193,7 +208,7 @@ const EditService = () => {
             services: serviceDetails.map((service) => ({
               serviceType: service.serviceType,
               dates: service.dates.map((date) => ({
-                date: convertToApiDateFormat(date.date),
+                date: convertToApiDateFormat(date.date), // Convert date to API format
                 times: date.times,
               })),
             })),
@@ -205,9 +220,9 @@ const EditService = () => {
         description: "Service updated successfully!",
         style: { background: "green", color: "white" },
       });
-      navigate("/admin/view-services");
+      navigate("/admin/view-services"); // Redirect after successful update
     } catch (error) {
-      setError(error.message);
+      setError(error.message); // Handle error message
       toast({
         title: "Error",
         description: "Failed to update service. Please try again.",
@@ -216,11 +231,13 @@ const EditService = () => {
     }
   };
 
+  // Convert date to API format
   const convertToApiDateFormat = (displayDate) => {
     const [year, month, day] = displayDate.split("-");
     return `${year}-${month}-${day}`;
   };
 
+  // Show loading or error message while fetching data
   if (loading) return <div className="text-center">Loading...</div>;
   if (error) return <div className="text-red-500 text-center">{error}</div>;
 

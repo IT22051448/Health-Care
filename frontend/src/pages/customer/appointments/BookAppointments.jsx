@@ -14,10 +14,12 @@ const BookAppointments = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { hospitals, servicesData, loading, error } = useSelector(
+  // Selectors to get hospitals, services,
+  const { hospitals, servicesData } = useSelector(
     (state) => state.appointments
   );
 
+  // State variables for managing selected hospital, service, doctor, etc.
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -31,6 +33,7 @@ const BookAppointments = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Get user information from the Redux state
   const userEmail = useSelector((state) => state.auth.user?.email);
   const AID = useSelector((state) => state.auth.user?.AID);
   const firstName = useSelector((state) => state.auth.user?.firstname);
@@ -38,6 +41,7 @@ const BookAppointments = () => {
   const dob = useSelector((state) => state.auth.user?.DOB);
   const userGender = useSelector((state) => state.auth.user?.gender);
 
+  // Effect to initialize patient details and fetch hospitals/services
   useEffect(() => {
     if (firstName && lastName) {
       setPatientDetails((prev) => ({
@@ -61,10 +65,21 @@ const BookAppointments = () => {
       }));
     }
 
-    dispatch(fetchHospitals());
-    dispatch(fetchServicesData());
+    // Fetch hospitals and services when the component mounts
+    try {
+      dispatch(fetchHospitals());
+      dispatch(fetchServicesData());
+    } catch (error) {
+      console.error("Error fetching hospitals or services:", error);
+      toast({
+        title: "Error",
+        description: "Could not load hospitals or services.",
+        variant: "destructive",
+      });
+    }
   }, [dispatch, firstName, lastName, dob, userGender]);
 
+  // Event handlers for selecting hospital, service, and doctor
   const handleHospitalChange = (e) => {
     const hospital = e.target.value;
     setSelectedHospital(hospital);
@@ -88,6 +103,7 @@ const BookAppointments = () => {
     fetchAvailableDates(selectedHospital, selectedService, doctorName);
   };
 
+  // Fetch available dates for the selected hospital, service, and doctor
   const fetchAvailableDates = (hospital, service, doctorName) => {
     const doctorServices = servicesData.filter(
       (serviceData) =>
@@ -114,6 +130,7 @@ const BookAppointments = () => {
     setAvailableDates(groupedDates);
   };
 
+  // Handle form submission for booking an appointment
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -181,10 +198,16 @@ const BookAppointments = () => {
         serviceAmount = serviceDetails.amount * selectedAppointments.length;
       } catch (error) {
         console.error("Error fetching service amount:", error);
+        toast({
+          title: "Error",
+          description: "Could not fetch service details.",
+          variant: "destructive",
+        });
         return;
       }
     }
 
+    // Prepare appointment data for submission
     const appointmentData = {
       hospital: selectedHospital,
       service: selectedService,
@@ -201,12 +224,13 @@ const BookAppointments = () => {
     console.log("Appointment Data:", appointmentData);
     toast({
       title: "Success",
-      description: "Please refer Appointment Summery!",
+      description: "Please refer to the Appointment Summary!",
       style: { background: "green", color: "white" },
     });
     navigate("/patient/appointment-summary", { state: appointmentData });
   };
 
+  // Helper function to format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return !isNaN(date.getTime())
@@ -214,6 +238,7 @@ const BookAppointments = () => {
       : "Invalid Date";
   };
 
+  // Filtering services and doctors based on selected hospital and service
   const filteredServices = servicesData
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) => service.services.map((serv) => serv.serviceType));

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 const InsurancePaymentModal = ({ onClose, onConfirm }) => {
+  // State to manage form data
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
@@ -14,17 +15,25 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
     subscriberDOB: "",
   });
 
+  // Handle changes in input fields
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target; // Destructure name and value from the event target
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: value, // Update the corresponding field in formData
     }));
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
-    e.preventDefault();
-    onConfirm({ ...formData, paymentStatus: "pending" });
+    e.preventDefault(); // Prevent default form submission behavior
+
+    try {
+      // Confirm the form data along with a pending payment status
+      onConfirm({ ...formData, paymentStatus: "pending" });
+    } catch (error) {
+      console.error("Error confirming insurance payment:", error.message); // Log any errors
+    }
   };
 
   return (
@@ -41,7 +50,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -52,7 +61,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -63,7 +72,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -76,7 +85,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -87,7 +96,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -101,7 +110,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="insuranceCompany"
                 value={formData.insuranceCompany}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -112,7 +121,7 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
                 name="policyNumber"
                 value={formData.policyNumber}
                 onChange={handleChange}
-                required
+                required // Make this field mandatory
                 className="border border-gray-300 rounded-md p-2 w-full"
               />
             </div>
@@ -154,13 +163,13 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
           <div className="flex justify-end mt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onClose} // Close the modal without submitting
               className="mr-2 bg-gray-400 text-white font-bold py-2 px-4 rounded hover:bg-gray-600 transition duration-200"
             >
               Cancel
             </button>
             <button
-              type="submit"
+              type="submit" // Submit the form data
               className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
             >
               Confirm Insurance Payment
@@ -172,4 +181,4 @@ const InsurancePaymentModal = ({ onClose, onConfirm }) => {
   );
 };
 
-export default InsurancePaymentModal;
+export default InsurancePaymentModal; // Export the component for use in other parts of the application
