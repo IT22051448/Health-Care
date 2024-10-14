@@ -34,6 +34,12 @@ const userSchema = new mongoose.Schema({
   contact: {
     type: String,
   },
+  gender: {
+    type: String,
+  },
+  DOB: {
+    type: Date,
+  },
   created_date: {
     type: Date,
     required: true,
@@ -45,6 +51,13 @@ const userSchema = new mongoose.Schema({
   AID: {
     type: String,
     unique: true,
+  },
+  QRCodeUrl: {
+    type: String,
+    required: true,
+  },
+  lastVisited: {
+    type: Date,
   },
 });
 

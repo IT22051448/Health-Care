@@ -29,6 +29,7 @@ import DocList from "./pages/admin/doctors/docList";
 import HospitalList from "./pages/admin/hospitals/hospitalList";
 import MedServices from "./pages/admin/medServices/MedServices";
 import DoctorProfile from "./pages/admin/doctors/DoctorProfile";
+import CheckIn from "./pages/admin/checkin/CheckIn";
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -83,6 +84,7 @@ function App() {
           <Route path="doctors/profile/:id" element={<DoctorProfile />} />
           <Route path="hospitals" element={<HospitalList />} />
           <Route path="med-services" element={<MedServices />} />
+          <Route path="checkin" element={<CheckIn />} />
         </Route>
 
         <Route

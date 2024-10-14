@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import doctorImage from "../../../assets/doctor.jpg";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
+import { useSelector } from "react-redux";
 
 const PatientHome = () => {
+  const { user } = useSelector((state) => state.auth);
+
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,6 +50,18 @@ const PatientHome = () => {
       </div>
 
       <main className="container mx-auto p-6">
+        <Card className="flex flex-col mb-5 items-center justify-center p-5">
+          <CardHeader className="text-center text-2xl font-black">
+            QR Code
+          </CardHeader>
+          <CardDescription className="text-center font-semibold">
+            Produce this QR code at the hospital to check in for your
+            appointment.
+          </CardDescription>
+          <CardContent>
+            <img src={user.QRCodeUrl} alt="QR Code" className="w-100" />
+          </CardContent>
+        </Card>
         <section className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">About Us</h2>
           <p className="text-gray-600 mb-4">

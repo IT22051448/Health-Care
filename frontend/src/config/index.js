@@ -29,6 +29,24 @@ export const resigterFormControls = [
     type: "email",
   },
   {
+    name: "gender",
+    label: "Gender",
+    componentType: "radio",
+    options: [
+      {
+        id: "male",
+        name: "Male",
+      },
+      { id: "female", name: "Female" },
+    ],
+  },
+  {
+    name: "DOB",
+    label: "Date of Birth",
+    componentType: "datepicker",
+    type: "date",
+  },
+  {
     name: "password",
     label: "Password",
     placeholder: "Enter your password",
