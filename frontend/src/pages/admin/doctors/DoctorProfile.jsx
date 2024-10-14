@@ -1,14 +1,15 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom"; 
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useDispatch } from "react-redux";
-import { deleteDoctor } from "@/redux/docSlice/docSlice";
-
+import { deleteDoctor, updateDoctor } from "@/redux/docSlice/docSlice";
+import UpdateDoctorModal from "@/layouts/admin/Components/updateDoc";
 function DoctorProfile() {
   const location = useLocation();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { doctor } = location.state || {};
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!doctor) return <div>No doctor data available.</div>;
 
@@ -19,24 +20,28 @@ function DoctorProfile() {
     );
 
     if (isConfirmed) {
-      
       dispatch(deleteDoctor(doctor._id))
         .unwrap()
         .then(() => {
-          
           console.log(`Profile for ${doctor.fullName} deleted successfully.`);
-          navigate("http://localhost:5173/admin/doctors"); 
+          navigate("http://localhost:5173/admin/doctors");
         })
         .catch((error) => {
-         
           console.error("Error deleting doctor profile:", error);
         });
     }
   };
 
-  const handleUpdate = () => {
-    
-    console.log(`Updating profile for ${doctor.fullName}`);
+  const handleUpdate = (updatedDoctorData) => {
+    dispatch(updateDoctor({ doctorId: doctor._id, ...updatedDoctorData }))
+      .unwrap()
+      .then(() => {
+        console.log(`Profile for ${doctor.fullName} updated successfully.`);
+        // Optionally, you can refresh the profile data here
+      })
+      .catch((error) => {
+        console.error("Error updating doctor profile:", error);
+      });
   };
 
   return (
@@ -75,7 +80,7 @@ function DoctorProfile() {
 
       <div className="flex space-x-4">
         <Button
-          onClick={handleUpdate}
+          onClick={() => setIsModalOpen(true)} // Open modal on click
           className="bg-blue-500 text-white hover:bg-blue-600 transition duration-300"
         >
           Update Profile
@@ -87,6 +92,14 @@ function DoctorProfile() {
           Delete Profile
         </Button>
       </div>
+
+      {/* Modal for updating doctor */}
+      <UpdateDoctorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        doctor={doctor}
+        onUpdate={handleUpdate}
+      />
     </div>
   );
 }
