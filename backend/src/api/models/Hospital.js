@@ -17,7 +17,12 @@ const hospitalSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    default: "..../..../.Srilanka",
+    default: "Srilanka",
+  },
+  image: {
+    type: String,
+    default:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs9mGa7d6TjMWpd-dsUD4Cea7E8wrJflA_kQ&s",
   },
 });
 

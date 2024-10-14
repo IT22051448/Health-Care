@@ -25,7 +25,7 @@ function DoctorProfile() {
         .then(() => {
           
           console.log(`Profile for ${doctor.fullName} deleted successfully.`);
-          navigate("admin/doctors"); 
+          navigate("http://localhost:5173/admin/doctors"); 
         })
         .catch((error) => {
          
