@@ -1,24 +1,36 @@
-import React, { useEffect } from "react";
-import PropTypes from "prop-types";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { verifyQR } from "@/redux/scanSlice";
+import { resetScanResult, verifyQR } from "@/redux/scanSlice";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import img from "@/assets/doctor.jpg";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { fetchAppointments } from "@/redux/appointSlice/appointSlice";
 
-export default function PatientDetails({ patientId }) {
+export default function PatientDetails() {
   const dispatch = useDispatch();
 
-  const { scannedPatient } = useSelector((state) => state.scan);
+  const { scannedPatient, scanResult } = useSelector((state) => state.scan);
+  const { appointments } = useSelector((state) => state.appointments);
 
   console.log(scannedPatient);
+  console.log(appointments);
 
   useEffect(() => {
-    dispatch(verifyQR({ patientId })).then((res) => {
+    dispatch(verifyQR({ scanResult })).then((res) => {
       console.log(res);
     });
-  }, [dispatch, patientId]);
+  }, [dispatch, scanResult]);
+
+  useEffect(() => {
+    dispatch(fetchAppointments(scannedPatient?.email)).then((res) => {
+      console.log("Scanned user appointments", res);
+    });
+  }, [dispatch, scannedPatient.email]);
+
+  const handleClick = () => {
+    dispatch(resetScanResult());
+  };
 
   return (
     <div className="flex flex-col items-center p-6 bg-gray-100  space-y-6 px-6">
@@ -54,11 +66,8 @@ export default function PatientDetails({ patientId }) {
           </div>
         </CardContent>
       </Card>
+
+      <Button onClick={handleClick}>Reset</Button>
     </div>
   );
 }
-
-// prop validation
-PatientDetails.propTypes = {
-  patientId: PropTypes.string.isRequired,
-};

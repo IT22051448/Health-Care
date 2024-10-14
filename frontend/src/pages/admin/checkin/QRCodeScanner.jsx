@@ -1,25 +1,29 @@
 import { useRef, useEffect } from "react";
 import QrScanner from "qr-scanner";
-import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
+import { setScanResult } from "@/redux/scanSlice";
 
-const QRCodeScanner = ({ onScanSuccess }) => {
+const QRCodeScanner = () => {
   const scanner = useRef();
   const videoRef = useRef(null);
 
-  const handleScan = (result) => {
-    console.log(result);
-
-    const data = result.data;
-
-    if (!data.startsWith("A")) {
-      alert("Invalid QR Code");
-      return;
-    }
-    scanner.current.stop();
-    onScanSuccess(data);
-  };
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    const handleScan = (result) => {
+      console.log(result);
+
+      const data = result.data;
+
+      if (!data.startsWith("A")) {
+        alert("Invalid QR Code");
+        return;
+      }
+      scanner.current.stop();
+
+      dispatch(setScanResult(data));
+    };
+
     if (videoRef?.current && !scanner.current) {
       scanner.current = new QrScanner(videoRef.current, handleScan, {
         highlightScanRegion: true,
@@ -34,7 +38,7 @@ const QRCodeScanner = ({ onScanSuccess }) => {
         scanner.current.stop();
       };
     }
-  }, [onScanSuccess]);
+  }, [dispatch]);
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-md flex flex-col items-center">
@@ -45,11 +49,6 @@ const QRCodeScanner = ({ onScanSuccess }) => {
       />
     </div>
   );
-};
-
-// prop validation
-QRCodeScanner.propTypes = {
-  onScanSuccess: PropTypes.func.isRequired,
 };
 
 export default QRCodeScanner;
