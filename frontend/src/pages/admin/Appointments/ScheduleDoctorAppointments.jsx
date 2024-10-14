@@ -19,16 +19,31 @@ const ScheduleDoctorAppointments = () => {
   } = useSelector((state) => state.appointments);
   const { toast } = useToast();
 
+  // State variables to hold selected doctor, hospital, and service details
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedHospital, setSelectedHospital] = useState("");
   const [serviceDetails, setServiceDetails] = useState([]);
 
   useEffect(() => {
-    dispatch(fetchDoctors());
-    dispatch(fetchHospitals());
-    dispatch(fetchAllServices());
+    // Fetch doctors, hospitals, and services on component mount
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchDoctors());
+        await dispatch(fetchHospitals());
+        await dispatch(fetchAllServices());
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load data. Please try again.",
+          style: { background: "red", color: "white" },
+        });
+      }
+    };
+    fetchData();
   }, [dispatch]);
 
+  // Facade Design Pattern: Simplifying interactions with complex logic for fetching data
+  // Function to add a new service entry
   const addService = () => {
     setServiceDetails((prev) => [
       ...prev,
@@ -40,6 +55,7 @@ const ScheduleDoctorAppointments = () => {
     });
   };
 
+  // Function to remove a service entry
   const removeService = (index) => {
     const updatedServices = serviceDetails.filter((_, i) => i !== index);
     setServiceDetails(updatedServices);
@@ -49,27 +65,32 @@ const ScheduleDoctorAppointments = () => {
     });
   };
 
+  // Update service type based on selection
   const handleServiceChange = (index, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[index].serviceType = value;
     setServiceDetails(updatedServices);
   };
 
+  // Update date for a specific service
   const handleDateChange = (serviceIndex, dateIndex, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[serviceIndex].dates[dateIndex].date = value;
     setServiceDetails(updatedServices);
   };
 
+  // Update time for a specific service
   const handleTimeChange = (serviceIndex, dateIndex, timeIndex, value) => {
     const updatedServices = [...serviceDetails];
     updatedServices[serviceIndex].dates[dateIndex].times[timeIndex] = value;
     setServiceDetails(updatedServices);
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate selected doctor and hospital
     if (!selectedDoctor || !selectedHospital) {
       toast({
         title: "Error",
@@ -79,6 +100,7 @@ const ScheduleDoctorAppointments = () => {
       return;
     }
 
+    // Validate that at least one service has been added
     if (serviceDetails.length === 0) {
       toast({
         title: "Error",
@@ -88,9 +110,10 @@ const ScheduleDoctorAppointments = () => {
       return;
     }
 
-    const invalidServices = serviceDetails.some((service, index) => {
+    // Validate service details
+    const invalidServices = serviceDetails.some((service) => {
       const isServiceTypeEmpty = !service.serviceType;
-      const hasInvalidDates = service.dates.some((date, dateIndex) => {
+      const hasInvalidDates = service.dates.some((date) => {
         const isDateEmpty = !date.date;
         const isTimeEmpty = !date.times[0]; // Change to validation for specific times
         return isDateEmpty || isTimeEmpty;
@@ -108,6 +131,7 @@ const ScheduleDoctorAppointments = () => {
       return;
     }
 
+    // Prepare payload for service creation
     const payload = {
       doctorName: selectedDoctor,
       hospitalName: selectedHospital,
@@ -120,6 +144,7 @@ const ScheduleDoctorAppointments = () => {
     };
 
     try {
+      // Attempt to create service and handle success
       await dispatch(createService(payload));
       toast({
         title: "Success",
@@ -128,6 +153,7 @@ const ScheduleDoctorAppointments = () => {
       });
       navigate("/admin/appointment");
     } catch (error) {
+      // Handle errors during service creation
       toast({
         title: "Error",
         description: "Failed to create service. Please try again.",
@@ -142,6 +168,7 @@ const ScheduleDoctorAppointments = () => {
         Schedule Doctor Appointments
       </h1>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Doctor selection */}
         <div>
           <label className="block mb-2 font-medium">Doctor Name</label>
           <select
@@ -158,6 +185,7 @@ const ScheduleDoctorAppointments = () => {
           </select>
         </div>
 
+        {/* Hospital selection */}
         <div>
           <label className="block mb-2 font-medium">Hospital Name</label>
           <select
@@ -174,6 +202,7 @@ const ScheduleDoctorAppointments = () => {
           </select>
         </div>
 
+        {/* Service details input */}
         {serviceDetails.map((service, index) => (
           <div
             key={index}
@@ -196,6 +225,7 @@ const ScheduleDoctorAppointments = () => {
               </select>
             </div>
 
+            {/* Date and Time inputs for the service */}
             {service.dates.map((date, dateIndex) => (
               <div key={dateIndex} className="flex space-x-4 mb-4">
                 <div className="flex-1">
@@ -236,6 +266,7 @@ const ScheduleDoctorAppointments = () => {
               </div>
             ))}
 
+            {/* Button to remove the service */}
             <button
               type="button"
               onClick={() => removeService(index)}
@@ -246,6 +277,7 @@ const ScheduleDoctorAppointments = () => {
           </div>
         ))}
 
+        {/* Button to add another service */}
         <button
           type="button"
           onClick={addService}
@@ -254,6 +286,7 @@ const ScheduleDoctorAppointments = () => {
           Add Another Service
         </button>
 
+        {/* Displaying added services */}
         <div className="mt-8">
           <h2 className="text-xl font-bold">Added Services</h2>
           {serviceDetails.map((service, index) => (
@@ -277,10 +310,10 @@ const ScheduleDoctorAppointments = () => {
           ))}
         </div>
 
+        {/* Submit button to create services */}
         <button
           type="submit"
           className="bg-green-500 text-white p-3 rounded mt-4 shadow-md hover:bg-green-700 transition"
-          onClick={handleSubmit}
         >
           Create Services
         </button>

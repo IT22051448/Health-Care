@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+//Schema which stores the DoctorServices attributes in the Mongo Database
+
 const serviceSchema = new mongoose.Schema({
   doctorName: { type: String, required: true },
   hospitalName: { type: String, required: true },

@@ -7,17 +7,19 @@ import {
   fetchServices,
 } from "@/redux/appointSlice/appointSlice";
 
+// Function to format date strings into a readable format
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Invalid Date";
+  if (isNaN(date.getTime())) return "Invalid Date"; // Handle invalid dates
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  return `${day}/${month}/${year}`; // Return formatted date
 };
 
+// Modal to display service details
 const ServiceDetailsModal = ({ isOpen, onClose, serviceDetails }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null; // Don't render if not open
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg">
@@ -44,8 +46,9 @@ const ServiceDetailsModal = ({ isOpen, onClose, serviceDetails }) => {
   );
 };
 
+// Modal for confirmation before deleting a service
 const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null; // Don't render if not open
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg">
@@ -70,30 +73,42 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
   );
 };
 
+// Main component to view services
 const ViewServices = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedServiceDetails, setSelectedServiceDetails] = useState([]);
-  const [serviceToDelete, setServiceToDelete] = useState(null);
+  const dispatch = useDispatch(); // Redux dispatch
+  const navigate = useNavigate(); // Navigate for routing
+  const { toast } = useToast(); // Custom toast hook for notifications
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for service details modal
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // State for confirmation modal
+  const [selectedServiceDetails, setSelectedServiceDetails] = useState([]); // Selected service details
+  const [serviceToDelete, setServiceToDelete] = useState(null); // Service ID to delete
 
+  // Selector to get services and loading state from Redux store
   const services =
     useSelector((state) => state.appointments.servicesData) || [];
   const loading = useSelector((state) => state.appointments.loading);
 
+  // Fetch services on component mount
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(fetchServices());
+      try {
+        await dispatch(fetchServices()).unwrap(); // Fetch services
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load services.",
+          style: { background: "red", color: "white" },
+        });
+      }
     };
     fetchData();
-  }, [dispatch]);
+  }, [dispatch, toast]); // Added toast to dependencies for proper reference
 
+  // Handle deletion of a service
   const handleDelete = async () => {
     if (serviceToDelete) {
       try {
-        await dispatch(deleteService(serviceToDelete));
+        await dispatch(deleteService(serviceToDelete)).unwrap(); // Delete service
         toast({
           title: "Success",
           description: "Service deleted successfully!",
@@ -106,32 +121,35 @@ const ViewServices = () => {
           style: { background: "red", color: "white" },
         });
       } finally {
-        setIsConfirmOpen(false);
-        setServiceToDelete(null);
+        setIsConfirmOpen(false); // Close confirmation modal
+        setServiceToDelete(null); // Reset service to delete
       }
     }
   };
 
+  // Open service details modal
   const handleOpenModal = (service) => {
     const details =
       service.services?.flatMap(
         (s) =>
           s.dates?.map((dateObj) => ({
             serviceType: s.serviceType,
-            date: formatDate(dateObj.date),
+            date: formatDate(dateObj.date), // Format date
             time: dateObj.times.join(", "),
           })) || []
       ) || [];
 
-    setSelectedServiceDetails(details);
-    setIsModalOpen(true);
+    setSelectedServiceDetails(details); // Set selected service details
+    setIsModalOpen(true); // Open modal
   };
 
+  // Open confirmation modal for deletion
   const openConfirmDelete = (id) => {
-    setServiceToDelete(id);
-    setIsConfirmOpen(true);
+    setServiceToDelete(id); // Set service ID to delete
+    setIsConfirmOpen(true); // Open confirmation modal
   };
 
+  // Loading state display
   if (loading) return <p className="text-center">Loading...</p>;
 
   return (

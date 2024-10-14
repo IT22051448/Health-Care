@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+//Schema which stores the appointments attributes in the Mongo Database
+
 const appointmentSchema = new mongoose.Schema({
   hospital: {
     type: String,

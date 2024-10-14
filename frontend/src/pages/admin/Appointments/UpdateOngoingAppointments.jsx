@@ -13,11 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmationModal from "@/components/appointComponents/ConfirmationModal";
 
 const UpdateOngoingAppointments = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Get appointment ID from URL params
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Select appointment and other data from Redux store
   const appointment = useSelector((state) =>
     state.appointments.appointments.find((appt) => appt._id === id)
   );
@@ -25,20 +26,34 @@ const UpdateOngoingAppointments = () => {
   const servicesData = useSelector((state) => state.appointments.servicesData);
   const doctors = useSelector((state) => state.appointments.doctors);
 
+  // State variables for form data and selections
   const [formData, setFormData] = useState(appointment || {});
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
-  const [confirmDelete, setConfirmDelete] = useState(false); // Confirmation state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Fetch necessary data on component mount
   useEffect(() => {
-    dispatch(fetchHospitals());
-    dispatch(fetchAllServices());
-    dispatch(fetchDoctors());
-    dispatch(fetchAppointmentByID(id));
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchHospitals());
+        await dispatch(fetchAllServices());
+        await dispatch(fetchDoctors());
+        await dispatch(fetchAppointmentByID(id));
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load data.",
+          style: { background: "red", color: "white" },
+        });
+      }
+    };
+    fetchData();
   }, [dispatch, id]);
 
+  // Set form data when appointment changes
   useEffect(() => {
     if (appointment) {
       setFormData(appointment);
@@ -47,6 +62,7 @@ const UpdateOngoingAppointments = () => {
     }
   }, [appointment]);
 
+  // Update selected service details when the service changes
   useEffect(() => {
     const serviceDetails = servicesData.find(
       (service) => service.name === selectedService
@@ -54,22 +70,37 @@ const UpdateOngoingAppointments = () => {
     setSelectedServiceDetails(serviceDetails);
   }, [selectedService, servicesData]);
 
+  // Handle changes in input fields
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
 
-    if (name === "fullName" || name === "age") {
+    // Notify user about non-editable fields
+    if (name === "fullName" || name === "age" || name === "accountId") {
+      toast({
+        title: "Field Not Editable",
+        description: `You cannot edit the ${name} field.`,
+        style: { background: "orange", color: "white" },
+      });
+    } else {
       setFormData((prev) => ({
         ...prev,
-        patientDetails: {
-          ...prev.patientDetails,
-          [name]: value,
-        },
+        [name]: e.target.value,
       }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
+  // Handle focus on non-editable fields
+  const handleFieldFocus = (field) => {
+    if (field === "fullName" || field === "age" || field === "accountId") {
+      toast({
+        title: "Field Not Editable",
+        description: `You cannot edit the ${field} field.`,
+        style: { background: "orange", color: "white" },
+      });
+    }
+  };
+
+  // Handle form submission to update appointment
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -91,6 +122,7 @@ const UpdateOngoingAppointments = () => {
     }
   };
 
+  // Handle appointment deletion
   const handleDelete = async () => {
     if (confirmDelete) {
       try {
@@ -114,6 +146,7 @@ const UpdateOngoingAppointments = () => {
     }
   };
 
+  // Modal control functions
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
@@ -127,6 +160,7 @@ const UpdateOngoingAppointments = () => {
     handleDelete();
   };
 
+  // Update appointment times
   const handleAppointmentChange = (index, field, value) => {
     const updatedAppointments = [...formData.appointments];
     updatedAppointments[index] = {
@@ -136,6 +170,7 @@ const UpdateOngoingAppointments = () => {
     setFormData({ ...formData, appointments: updatedAppointments });
   };
 
+  // Show loading if appointment data is not yet available
   if (!appointment) return <div>Loading...</div>;
 
   return (
@@ -156,8 +191,9 @@ const UpdateOngoingAppointments = () => {
                 type="text"
                 name="fullName"
                 value={formData.patientDetails?.fullName || ""}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded bg-white"
+                readOnly
+                className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+                onFocus={() => handleFieldFocus("fullName")}
               />
             </div>
             <div>
@@ -168,8 +204,9 @@ const UpdateOngoingAppointments = () => {
                 type="number"
                 name="age"
                 value={formData.patientDetails?.age || ""}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded bg-white"
+                readOnly
+                className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+                onFocus={() => handleFieldFocus("age")}
               />
             </div>
             <div className="col-span-2">
@@ -181,6 +218,7 @@ const UpdateOngoingAppointments = () => {
                 value={formData.AID}
                 readOnly
                 className="w-1/2 p-2 border rounded bg-gray-100 cursor-not-allowed"
+                onFocus={() => handleFieldFocus("accountId")}
               />
             </div>
             {/* Gender Selection */}
@@ -376,12 +414,16 @@ const UpdateOngoingAppointments = () => {
               <input
                 type="number"
                 value={formData.isGovernment ? "" : formData.payment.amount}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    payment: { ...formData.payment, amount: e.target.value },
-                  })
-                }
+                onChange={(e) => {
+                  const newAmount = Number(e.target.value);
+                  // Only update if the new amount is not less than 0
+                  if (newAmount >= 0 || formData.isGovernment) {
+                    setFormData({
+                      ...formData,
+                      payment: { ...formData.payment, amount: newAmount },
+                    });
+                  }
+                }}
                 disabled={formData.isGovernment}
                 className="w-full p-2 border rounded bg-white"
               />

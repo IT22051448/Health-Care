@@ -8,24 +8,36 @@ const OngoingAppointments = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // State to manage the selected appointment
+  // State to manage the selected appointment and the visibility of the details modal
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  // Fetch all appointments when the component mounts
   useEffect(() => {
-    dispatch(fetchAllAppointments());
+    const fetchAppointments = async () => {
+      try {
+        await dispatch(fetchAllAppointments());
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+        // You can also show a toast or a notification to the user here
+      }
+    };
+    fetchAppointments();
   }, [dispatch]);
 
+  // Handle click on an appointment to show its details
   const handleDetailsClick = (appointment) => {
     setSelectedAppointment(appointment);
     setShowDetails(true);
   };
 
+  // Close the details modal
   const handleCloseDetails = () => {
     setShowDetails(false);
     setSelectedAppointment(null);
   };
 
+  // Show a loading indicator while data is being fetched
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -120,7 +132,7 @@ const OngoingAppointments = () => {
 
             <button
               onClick={handleCloseDetails}
-              className="absolute  bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              className="absolute bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
             >
               Cancel
             </button>
