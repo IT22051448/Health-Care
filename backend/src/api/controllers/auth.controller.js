@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import genAuthToken from "../../utils/genAuthToken.js";
 import { emailOrUsername } from "../../utils/helpers.js";
 import AidCounter from "../models/AidCounter.js";
+import { generateQRCode } from "../../utils/genQR.js";
 
 const authController = {
   async register(req, res) {
@@ -23,6 +24,8 @@ const authController = {
         role,
         avatar,
         contact,
+        DOB,
+        gender,
       } = req.body;
 
       // Check if username or email already exists
@@ -75,6 +78,8 @@ const authController = {
         console.log("Generated AID:", AID);
       }
 
+      const QRCode = await generateQRCode(AID, { width: 300 });
+
       const user = new User({
         username,
         firstname,
@@ -85,8 +90,11 @@ const authController = {
         avatar,
         contact,
         AID,
+        DOB,
+        gender,
         created_date: new Date(),
         last_login: new Date(),
+        QRCodeUrl: QRCode,
       });
 
       try {

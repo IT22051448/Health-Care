@@ -5,6 +5,7 @@ import {
   BriefcaseMedical,
   HeartPulse,
   Stethoscope,
+  ShieldCheck,
 } from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -14,6 +15,12 @@ export const adminSideBarMenuItems = [
     label: "Dashboard",
     path: "/admin/dashboard",
     icon: <LayoutDashboard />,
+  },
+  {
+    id: "checkin",
+    label: "Check-in",
+    path: "/admin/checkin",
+    icon: <ShieldCheck />,
   },
   {
     id: "appointment",
