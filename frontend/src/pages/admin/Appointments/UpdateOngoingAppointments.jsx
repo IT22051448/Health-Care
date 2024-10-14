@@ -100,6 +100,17 @@ const UpdateOngoingAppointments = () => {
     }
   };
 
+  // Handle focus on non-editable fields and show toast
+  const handleFieldClick = (field) => {
+    if (field === "fullName" || field === "age" || field === "accountId") {
+      toast({
+        title: "Field Not Editable",
+        description: `You cannot edit the ${field} field.`,
+        style: { background: "orange", color: "white" },
+      });
+    }
+  };
+
   // Handle form submission to update appointment
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -193,7 +204,7 @@ const UpdateOngoingAppointments = () => {
                 value={formData.patientDetails?.fullName || ""}
                 readOnly
                 className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
-                onFocus={() => handleFieldFocus("fullName")}
+                onClick={() => handleFieldClick("fullName")}
               />
             </div>
             <div>
