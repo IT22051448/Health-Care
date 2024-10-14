@@ -12,14 +12,12 @@ export default function CheckIn() {
   };
 
   return (
-    <div className="patient-checkin">
-      <h1>Patient Check-In</h1>
-
+    <>
       {!patientId ? (
         <QRCodeScanner onScanSuccess={handleScanSuccess} />
       ) : (
         <PatientDetails patientId={patientId} />
       )}
-    </div>
+    </>
   );
 }
