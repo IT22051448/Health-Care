@@ -5,11 +5,7 @@ import authMiddleware from "../middleware/authMiddleware";
 const userRouter = Router();
 
 userRouter.get("/", authMiddleware(["admin"]), userController.getAllUsers);
-userRouter.post(
-  "/scanQR",
-  authMiddleware(["admin"]),
-  userController.createUser
-);
+userRouter.put("/scanQR", authMiddleware(["admin"]), userController.scanQRCode);
 userRouter.get(
   "/:id",
   authMiddleware(["admin", "user"]),

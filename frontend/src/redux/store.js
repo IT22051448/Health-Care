@@ -3,6 +3,7 @@ import authReducer from "./authSlice";
 import appointReducer from "./appointSlice/appointSlice";
 import doctorsReducer from "./docSlice/docSlice";
 import hospitalReducer from "./hospitalSlice/hospitalSLice"; // Import the hospital slice
+import scanReducer from "./scanSlice";
 
 import storage from "redux-persist/lib/storage";
 import { persistReducer } from "redux-persist";
@@ -19,7 +20,8 @@ const reducer = combineReducers({
   auth: authReducer,
   appointments: appointReducer,
   doctors: doctorsReducer,
-  hospitals: hospitalReducer, 
+  hospitals: hospitalReducer,
+  scan: scanReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);
