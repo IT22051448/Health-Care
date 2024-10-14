@@ -21,29 +21,29 @@ export default function PatientDetails({ patientId }) {
   }, [dispatch, patientId]);
 
   return (
-    <div className="flex flex-col items-center p-6 bg-gray-100 w-full space-y-6">
-      <Card className="w-full max-w-lg bg-white shadow-md">
+    <div className="flex flex-col items-center p-6 bg-gray-100  space-y-6 px-6">
+      <Card className="w-full  bg-white shadow-md">
         <CardHeader className="flex flex-row items-center space-x-4 p-4">
           <img src={img} alt="profile" className="w-20 h-20 rounded-full" />
           <div className="flex flex-col">
             <h2 className="text-lg font-semibold">
-              {scannedPatient.firstname} {scannedPatient.lastname}
+              {scannedPatient?.firstname} {scannedPatient?.lastname}
             </h2>
             <p className="text-gray-500">
-              Memeber Since: {formatDate(scannedPatient.created_date)}
+              Memeber Since: {formatDate(scannedPatient?.created_date)}
             </p>
-            <p>Last Visited: {formatDate(scannedPatient.lastVisited)}</p>
+            <p>Last Visited: {formatDate(scannedPatient?.lastVisited)}</p>
           </div>
         </CardHeader>
       </Card>
 
-      <div className="flex space-x-4">
+      <div className="flex justify-between w-full ">
         <Button variant="outline">Personal Details</Button>
         <Button variant="outline">Appointments</Button>
         <Button variant="outline">Payments</Button>
       </div>
 
-      <Card className="w-full max-w-lg bg-white shadow-md">
+      <Card className="w-full bg-white shadow-md">
         <CardContent>
           <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
           <div className="mt-4 p-4 bg-gray-100 rounded-md">
