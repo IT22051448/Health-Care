@@ -28,6 +28,7 @@ const AdminHeader = ({ setOpen }) => {
           Logout
         </Button>
       </div>
+      
     </header>
   );
 };

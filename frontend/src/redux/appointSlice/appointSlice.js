@@ -10,7 +10,11 @@ const initialState = {
   service: null,
   loading: false,
   error: null,
+  appointmentsByMonth: [], // New state for storing appointments by month
+  appointmentsByYear: [], // New state for storing appointments by year
+  showPopup: false,
 };
+
 
 // This code is used to fetch hospitals
 export const fetchHospitals = createAsyncThunk(
@@ -255,6 +259,27 @@ export const fetchServices = createAsyncThunk(
   }
 );
 
+export const getAllAppointmentsByMonth = createAsyncThunk(
+  "appointments/getAllAppointmentsByMonth",
+  async ({ month, year }) => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/appointments-by-month?month=${month}&year=${year}`
+    );
+    return response.data;
+  }
+);
+
+// This code is used to fetch all appointments by year
+export const getAllAppointmentsByYear = createAsyncThunk(
+  "appointments/getAllAppointmentsByYear",
+  async (year) => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/appointments-by-year?year=${year}`
+    );
+    return response.data;
+  }
+);
+
 const appointSlice = createSlice({
   name: "appointments",
   initialState,
@@ -479,7 +504,35 @@ const appointSlice = createSlice({
       .addCase(fetchServices.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(getAllAppointmentsByMonth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllAppointmentsByMonth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointmentsByMonth = action.payload; // Store the fetched appointments by month
+      })
+      .addCase(getAllAppointmentsByMonth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.appointmentsByMonth=[];
+        state.showPopup = true;
+      })
+      .addCase(getAllAppointmentsByYear.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllAppointmentsByYear.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointmentsByYear = action.payload; // Store the fetched appointments by year
+      })
+      .addCase(getAllAppointmentsByYear.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase('RESET_POPUP', (state) => {
+        state.showPopup = false;
       });
+      
   },
 });
 

@@ -312,3 +312,77 @@ export const deleteAppointment = async (req, res) => {
       .json({ message: "Error deleting appointment", error: error.message });
   }
 };
+
+// Get all appointments by month
+export const getAllAppointmentsByMonth = async (req, res) => {
+  const { year, month } = req.query;
+
+  if (!year) {
+    return res.status(400).json({ message: "Year is required." });
+  }
+
+  try {
+    let startDate, endDate;
+
+    if (month === "null") {
+      // Get full year range if month is "null"
+      startDate = new Date(`${year}-01-01`);
+      endDate = new Date(`${year}-12-31`);
+    } else {
+      // Calculate startDate and endDate for the specified month
+      const monthIndex = parseInt(month) - 1; // Month is 0-based in JavaScript Date
+      startDate = new Date(year, monthIndex, 1); // First day of the month
+      endDate = new Date(year, monthIndex + 1, 0); // Last day of the month
+    }
+
+    // Find appointments within the date range
+    const appointments = await Appointment.find({
+      "appointments.date": { $gte: startDate, $lt: endDate },
+    });
+
+    if (appointments.length === 0) {
+      
+      return res.status(404).json({ message: "No appointments found for the specified period." });
+    }
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching appointments by month",
+      error: error.message,
+    });
+  }
+};
+
+
+// Get all appointments by year
+export const getAllAppointmentsByYear = async (req, res) => {
+  const { year } = req.query;
+
+  if (!year) {
+    return res.status(400).json({ message: "Year is required." });
+  }
+
+  try {
+    // Convert year to appropriate Date range for filtering
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31`);
+
+    const appointments = await Appointment.find({
+      "appointments.date": { $gte: startDate, $lt: endDate },
+    });
+
+    if (appointments.length === 0) {
+      return res.status(404).json({ message: "No appointments found for the specified year." });
+    }
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching appointments by year",
+      error: error.message,
+    });
+  }
+};
+
+

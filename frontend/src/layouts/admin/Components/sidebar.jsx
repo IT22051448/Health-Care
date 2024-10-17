@@ -42,6 +42,7 @@ const AdminSidebar = ({ open, setOpen }) => {
         </div>
         <MenuItems navigate={navigate} />
       </aside>
+      
     </Fragment>
   );
 };

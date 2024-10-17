@@ -9,6 +9,8 @@ import {
   getAppointmentById,
   updateAppointment,
   deleteAppointment,
+  getAllAppointmentsByMonth,
+  getAllAppointmentsByYear,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -42,5 +44,11 @@ router.put("/update-appointment/:id", updateAppointment);
 
 // Delete an appointment
 router.delete("/delete-appointment/:id", deleteAppointment);
+
+// Get appoinmtn by month
+router.get("/appointments-by-month", getAllAppointmentsByMonth);
+
+// Get appoinmtn by month
+router.get("/appointments-by-year", getAllAppointmentsByYear);
 
 export default router;
