@@ -13,6 +13,7 @@ const initialState = {
   appointmentsByMonth: [], // New state for storing appointments by month
   appointmentsByYear: [], // New state for storing appointments by year
   showPopup: false,
+  previousAppointmentsByMonth: [],
 };
 
 
@@ -264,6 +265,16 @@ export const getAllAppointmentsByMonth = createAsyncThunk(
   async ({ month, year }) => {
     const response = await axios.get(
       `${import.meta.env.VITE_API_URL}appoint/appointments-by-month?month=${month}&year=${year}`
+    );
+    return response.data;
+  }
+);
+
+export const getPreviousAppointmentsByMonth = createAsyncThunk(
+  "appointments/getPreviousAppointmentsByMonth",
+  async ({ month, year }) => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}appoint/previous-appointments-by-month?month=${month}&year=${year}`
     );
     return response.data;
   }
@@ -531,7 +542,21 @@ const appointSlice = createSlice({
       })
       .addCase('RESET_POPUP', (state) => {
         state.showPopup = false;
-      });
+      })
+      .addCase(getPreviousAppointmentsByMonth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getPreviousAppointmentsByMonth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.previousAppointmentsByMonth = action.payload; // Store the fetched appointments by month
+      })
+      .addCase(getPreviousAppointmentsByMonth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.previousAppointmentsByMonth=[];
+        state.showPopup = false;
+      })
+      
       
   },
 });

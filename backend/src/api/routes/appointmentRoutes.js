@@ -11,6 +11,7 @@ import {
   deleteAppointment,
   getAllAppointmentsByMonth,
   getAllAppointmentsByYear,
+  getPreviousAppointmentsByMonth,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -50,5 +51,7 @@ router.get("/appointments-by-month", getAllAppointmentsByMonth);
 
 // Get appoinmtn by month
 router.get("/appointments-by-year", getAllAppointmentsByYear);
+
+router.get("/previous-appointments-by-month", getPreviousAppointmentsByMonth);
 
 export default router;

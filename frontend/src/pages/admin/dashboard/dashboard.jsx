@@ -5,15 +5,15 @@ import SalesLineChart from '../../../components/dashboard/SalesLineChart';
 import MostPopularDoctors from '../../../components/dashboard/MostPopularDoctors';
 import BestSellingServices from '../../../components/dashboard/TopServices';
 import Popup from '../../../components/ui/Popup'; // Import the Popup component
-import { fetchDoctors, getAllAppointmentsByMonth} from "@/redux/appointSlice/appointSlice";
+import { fetchDoctors, getAllAppointmentsByMonth, getPreviousAppointmentsByMonth } from "@/redux/appointSlice/appointSlice";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const doctors = useSelector((state) => state.appointments.doctors);
-  const { appointmentsByMonth } = useSelector((state) => state.appointments);
-  
+  const { appointmentsByMonth, previousAppointmentsByMonth } = useSelector((state) => state.appointments);
+
   const { showPopup, error } = useSelector((state) => state.appointments);
   
   const [doctorCount, setDoctorCount] = useState(0);
@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [previousTotalSales, setPreviousTotalSales] = useState(0);
   const [previousServiceCharges, setPreviousServiceCharges] = useState(0);
+  const [previousAppointmentCount, setPreviousAppointmentCount] = useState(0);
 
   const handleClosePopup = () => {
     dispatch({ type: 'RESET_POPUP' }); // Reset the popup state
@@ -37,6 +38,20 @@ const Dashboard = () => {
   useEffect(() => {
     if (dataPeriod === "monthly" || dataPeriod === "yearly") {
       dispatch(getAllAppointmentsByMonth({ year: selectedYear, month: selectedMonth }));
+      
+      // Fetch previous month's or previous year's data
+      if(selectedMonth!=null){
+      const previousMonth = selectedMonth === 1 ? 12 : selectedMonth - 1;
+      const previousYear = selectedMonth === 1 ? selectedYear - 1 : selectedYear;
+      dispatch(getPreviousAppointmentsByMonth({ year: previousYear, month: previousMonth }));
+      }
+      else{
+        const previousMonth = null; g
+        const previousYear = selectedYear - 1;
+        dispatch(getPreviousAppointmentsByMonth({ year: previousYear, month: previousMonth }));
+      }
+      
+      
     }
   }, [dataPeriod, selectedYear, selectedMonth, dispatch]);
 
@@ -55,9 +70,34 @@ const Dashboard = () => {
       setTotalSales(total);
       setServiceCharges(total * 0.125);
     }
-  }, [appointmentsByMonth]);
 
+    // Calculate percentage change for appointments
+    if (previousAppointmentsByMonth) {
+      setPreviousAppointmentCount(previousAppointmentsByMonth.length);
+    }
+
+    // Calculate percentage change for total sales and service charges
+    if (previousAppointmentsByMonth) {
+      const previousTotal = previousAppointmentsByMonth.reduce((sum, appointment) => {
+        return sum + (appointment.payment?.amount || 0);
+      }, 0);
+      setPreviousTotalSales(previousTotal);
+      setPreviousServiceCharges(previousTotal * 0.125);
+    }
+  }, [appointmentsByMonth, previousAppointmentsByMonth]);
+
+  // Calculate percentage changes
+  const totalSalesPercentageChange = previousTotalSales
+    ? ((totalSales - previousTotalSales) / previousTotalSales) * 100
+    : 0;
   
+  const serviceChargesPercentageChange = previousServiceCharges
+    ? ((serviceCharges - previousServiceCharges) / previousServiceCharges) * 100
+    : 0;
+  
+  const appointmentCountPercentageChange = previousAppointmentCount
+    ? ((appointmentCount - previousAppointmentCount) / previousAppointmentCount) * 100
+    : 0;
 
   const handlePeriodChange = (period) => {
     setDataPeriod(period);
@@ -85,7 +125,7 @@ const Dashboard = () => {
               <ChevronDownIcon aria-hidden="true" className="-mr-1 h-5 w-5 text-gray-400" />
             </MenuButton>
           </div>
-
+        
           <MenuItems className="absolute right-0 z-10 mt-2 w-36 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
             <div className="py-1">
               <MenuItem>
@@ -181,20 +221,20 @@ const Dashboard = () => {
         <StatisticCard 
           title="Total Sales" 
           value={`$${totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
-          percentage="12.00" 
-          isPositive={true} 
+          percentage={totalSalesPercentageChange.toFixed(2)} 
+          isPositive={totalSalesPercentageChange >= 0} 
         />
         <StatisticCard 
           title="Service Charges" 
           value={`$${serviceCharges.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
-          percentage="8.50" 
-          isPositive={true} 
+          percentage={serviceChargesPercentageChange.toFixed(2)} 
+          isPositive={serviceChargesPercentageChange >= 0} 
         />
         <StatisticCard 
           title="Appointments Made" 
           value={appointmentCount} 
-          percentage="9.07" 
-          isPositive={true} 
+          percentage={appointmentCountPercentageChange.toFixed(2)} 
+          isPositive={appointmentCountPercentageChange >= 0} 
         />
         <StatisticCard 
           title="No. of Doctors" 

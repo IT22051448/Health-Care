@@ -5,7 +5,7 @@ const StatisticCard = ({ title, value, percentage, isPositive }) => {
         <div className="flex items-center justify-between">
           <p className="text-2xl font-semibold">{value}</p>
           <p className={`text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-            {isPositive ? `+${percentage}%` : `-${percentage}%`}
+            {isPositive ? `+${percentage}%` : `${percentage}%`}
           </p>
         </div>
       </div>
