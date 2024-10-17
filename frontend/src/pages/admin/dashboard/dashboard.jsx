@@ -46,7 +46,7 @@ const Dashboard = () => {
       dispatch(getPreviousAppointmentsByMonth({ year: previousYear, month: previousMonth }));
       }
       else{
-        const previousMonth = null; g
+        const previousMonth = null; 
         const previousYear = selectedYear - 1;
         dispatch(getPreviousAppointmentsByMonth({ year: previousYear, month: previousMonth }));
       }
