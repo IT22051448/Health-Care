@@ -270,13 +270,28 @@ export const getAppointmentById = async (req, res) => {
 // Update an appointment by ID for admin
 export const updateAppointment = async (req, res) => {
   const { id } = req.params;
-  const { hospital, service, doctor, patientDetails, appointments, payment } =
-    req.body;
+  const {
+    hospital,
+    service,
+    doctor,
+    patientDetails,
+    appointments,
+    payment,
+    isGovernment,
+  } = req.body;
 
   try {
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
-      { hospital, service, doctor, patientDetails, appointments, payment },
+      {
+        hospital,
+        service,
+        doctor,
+        patientDetails,
+        appointments,
+        payment,
+        isGovernment,
+      },
       { new: true }
     );
 
@@ -342,8 +357,9 @@ export const getAllAppointmentsByMonth = async (req, res) => {
     });
 
     if (appointments.length === 0) {
-      
-      return res.status(404).json({ message: "No appointments found for the specified period." });
+      return res
+        .status(404)
+        .json({ message: "No appointments found for the specified period." });
     }
 
     res.status(200).json(appointments);
@@ -382,8 +398,9 @@ export const getPreviousAppointmentsByMonth = async (req, res) => {
     });
 
     if (appointments.length === 0) {
-      
-      return res.status(404).json({ message: "No appointments found for the specified period." });
+      return res
+        .status(404)
+        .json({ message: "No appointments found for the specified period." });
     }
 
     res.status(200).json(appointments);
@@ -394,7 +411,6 @@ export const getPreviousAppointmentsByMonth = async (req, res) => {
     });
   }
 };
-
 
 // Get all appointments by year
 export const getAllAppointmentsByYear = async (req, res) => {
@@ -414,7 +430,9 @@ export const getAllAppointmentsByYear = async (req, res) => {
     });
 
     if (appointments.length === 0) {
-      return res.status(404).json({ message: "No appointments found for the specified year." });
+      return res
+        .status(404)
+        .json({ message: "No appointments found for the specified year." });
     }
 
     res.status(200).json(appointments);
@@ -425,8 +443,6 @@ export const getAllAppointmentsByYear = async (req, res) => {
     });
   }
 };
-
-
 
 // Delete a specific cancelled appointment
 export const deleteCancelledAppointment = async (req, res) => {

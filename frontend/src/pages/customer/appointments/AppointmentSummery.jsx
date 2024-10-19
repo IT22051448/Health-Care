@@ -105,7 +105,7 @@ const AppointmentSummary = () => {
       payment: {
         amount: isGovernment ? 0 : paymentAmount,
         method: "Insurance",
-        status: "pending",
+        status: "Completed",
       },
       userEmail: userEmail || "",
       AID: AID || "",

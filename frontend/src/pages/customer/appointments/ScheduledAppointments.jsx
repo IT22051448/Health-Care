@@ -185,7 +185,19 @@ const ScheduledAppointments = () => {
                   </p>
                   <p className="text-gray-700 mb-5">
                     <strong>Payment Status:</strong>{" "}
-                    {appointment.payment?.status || "Pending"}
+                    <span
+                      className={`${
+                        appointment.payment?.status === "Rejected"
+                          ? "text-red-500"
+                          : appointment.payment?.status === "Completed"
+                          ? "text-green-500"
+                          : appointment.payment?.status === "Pending"
+                          ? "text-orange-500"
+                          : ""
+                      }`}
+                    >
+                      {appointment.payment?.status || "Pending"}
+                    </span>
                   </p>
                 </div>
 

@@ -10,6 +10,7 @@ const CancellationModal = ({ open, onClose, onConfirm, appointmentId }) => {
     "No Longer Require Services",
     "Scheduling Conflict",
     "Financial Issues",
+    "Payment Rejected",
     "Other",
   ];
 

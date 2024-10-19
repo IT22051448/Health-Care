@@ -62,6 +62,54 @@ const UpdateOngoingAppointments = () => {
     }
   }, [appointment]);
 
+  // Function to handle hospital changes
+  const handleHospitalChange = (e) => {
+    const hospitalName = e.target.value;
+    const selectedHospitalData = hospitals.find(
+      (hospital) => hospital.hospitalName === hospitalName
+    );
+
+    if (selectedHospitalData) {
+      setSelectedHospital(hospitalName);
+
+      const isGovernment = selectedHospitalData.hospitalType === "Government";
+
+      setFormData((prev) => ({
+        ...prev,
+        hospital: hospitalName,
+        isGovernment, // Update isGovernment based on the selected hospital type
+      }));
+    } else {
+      // Handle the case where the hospital is not found
+      setSelectedHospital("");
+      setFormData((prev) => ({ ...prev, hospital: "", isGovernment: false }));
+    }
+  };
+
+  // useEffect to respond to isGovernment changes
+  useEffect(() => {
+    if (formData.isGovernment) {
+      // If the hospital is government, reset payment method and amount
+      setFormData((prev) => ({
+        ...prev,
+        payment: {
+          method: "Government Hospital",
+          amount: "Government Hospital",
+        },
+      }));
+    } else {
+      // If the hospital is not government, ensure isGovernment is set to false
+      setFormData((prev) => ({
+        ...prev,
+        isGovernment: false,
+        payment: {
+          method: prev.payment.method || "Card Payment",
+          amount: prev.payment.amount !== null ? prev.payment.amount : 0,
+        },
+      }));
+    }
+  }, [formData.isGovernment]);
+
   // Update selected service details when the service changes
   useEffect(() => {
     const serviceDetails = servicesData.find(
@@ -69,25 +117,6 @@ const UpdateOngoingAppointments = () => {
     );
     setSelectedServiceDetails(serviceDetails);
   }, [selectedService, servicesData]);
-
-  // Handle changes in input fields
-  const handleInputChange = (e) => {
-    const { name } = e.target;
-
-    // Notify user about non-editable fields
-    if (name === "fullName" || name === "age" || name === "accountId") {
-      toast({
-        title: "Field Not Editable",
-        description: `You cannot edit the ${name} field.`,
-        style: { background: "orange", color: "white" },
-      });
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: e.target.value,
-      }));
-    }
-  };
 
   // Handle focus on non-editable fields
   const handleFieldFocus = (field) => {
@@ -100,24 +129,42 @@ const UpdateOngoingAppointments = () => {
     }
   };
 
-  // Handle focus on non-editable fields and show toast
-  const handleFieldClick = (field) => {
-    if (field === "fullName" || field === "age" || field === "accountId") {
-      toast({
-        title: "Field Not Editable",
-        description: `You cannot edit the ${field} field.`,
-        style: { background: "orange", color: "white" },
-      });
-    }
-  };
-
-  // Handle form submission to update appointment
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate if there is at least one appointment
+    if (formData.appointments.length === 0) {
+      toast({
+        title: "Error",
+        description: "You must add at least one appointment.",
+        style: { background: "red", color: "white" },
+      });
+      return;
+    }
+
+    // Validate whether appointments have dates and times
+    if (formData.appointments.some((apt) => !apt.date || !apt.time.length)) {
+      toast({
+        title: "Error",
+        description: "All appointments must have a date and at least one time.",
+        style: { background: "red", color: "white" },
+      });
+      return;
+    }
+
+    // Prepare the data to be submitted
+    const appointmentData = {
+      ...formData,
+      payment: formData.isGovernment
+        ? { method: null, amount: null, status: "Completed" }
+        : formData.payment, // Use original payment data if not a government hospital
+    };
+
+    // Log the data being submitted
+    console.log("Submitting appointment data:", { id, appointmentData });
+
     try {
-      await dispatch(
-        updateAppointment({ id, appointmentData: formData })
-      ).unwrap();
+      await dispatch(updateAppointment({ id, appointmentData })).unwrap();
       toast({
         title: "Success",
         description: "Appointment Updated Successfully",
@@ -174,15 +221,46 @@ const UpdateOngoingAppointments = () => {
   // Update appointment times
   const handleAppointmentChange = (index, field, value) => {
     const updatedAppointments = [...formData.appointments];
-    updatedAppointments[index] = {
-      ...updatedAppointments[index],
-      [field]: value,
-    };
+
+    // Update date or time based on the field
+    if (field === "date") {
+      updatedAppointments[index].date = value; // Store date as a string
+    } else if (field === "time") {
+      updatedAppointments[index].time = value;
+    }
+
     setFormData({ ...formData, appointments: updatedAppointments });
   };
 
-  // Show loading if appointment data is not yet available
-  if (!appointment) return <div>Loading...</div>;
+  // Updated addAppointment function
+  const addAppointment = () => {
+    const newAppointment = { date: "", time: [""] }; // Create a new appointment object
+    setFormData((prev) => ({
+      ...prev,
+      appointments: [...prev.appointments, newAppointment], // Add the new appointment to the existing list
+    }));
+    toast({
+      title: "Appointment Added",
+      description: "New appointment added.",
+      style: { background: "white", color: "black" },
+    });
+  };
+
+  // Updated removeAppointment function
+  const removeAppointment = (index) => {
+    const updatedAppointments = formData.appointments.filter(
+      (_, i) => i !== index
+    );
+    setFormData((prev) => ({
+      ...prev,
+      appointments: updatedAppointments,
+    }));
+    toast({
+      title: "Appointment Removed",
+      description: "Appointment removed successfully.",
+      style: { background: "white", color: "black" },
+    });
+  };
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-white rounded-md shadow-md">
@@ -204,7 +282,7 @@ const UpdateOngoingAppointments = () => {
                 value={formData.patientDetails?.fullName || ""}
                 readOnly
                 className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
-                onClick={() => handleFieldClick("fullName")}
+                onClick={() => handleFieldFocus("fullName")}
               />
             </div>
             <div>
@@ -275,11 +353,7 @@ const UpdateOngoingAppointments = () => {
               </label>
               <select
                 value={selectedHospital}
-                onChange={(e) => {
-                  const hospitalName = e.target.value;
-                  setSelectedHospital(hospitalName);
-                  setFormData({ ...formData, hospital: hospitalName });
-                }}
+                onChange={handleHospitalChange}
                 className="w-full p-2 border rounded bg-white"
               >
                 <option value="">Select Hospital</option>
@@ -350,39 +424,57 @@ const UpdateOngoingAppointments = () => {
         {/* Appointments Section */}
         <div className="border p-4 rounded-md shadow-md mb-6 bg-gray-50">
           <h2 className="text-xl font-semibold mb-4">Appointments</h2>
-          {formData.appointments.map((apt, index) => (
-            <div
-              key={apt._id}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
-            >
-              <div>
-                <label className="block font-semibold mb-2 text-gray-700">
-                  Appointment Date
-                </label>
-                <input
-                  type="date"
-                  value={apt.date.split("T")[0]}
-                  onChange={(e) =>
-                    handleAppointmentChange(index, "date", e.target.value)
-                  }
-                  className="w-full p-2 border rounded bg-white"
-                />
+          {formData.appointments.length === 0 ? (
+            <p className="text-gray-500 mb-7">No appointments selected.</p>
+          ) : (
+            formData.appointments.map((apt, index) => (
+              <div
+                key={apt._id}
+                className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-12"
+              >
+                <button
+                  type="button"
+                  onClick={() => removeAppointment(index)}
+                  className="absolute right-2 top-[-1.5rem] bg-red-500 text-white text-xs px-4 py-3 rounded hover:bg-red-600 transition duration-200"
+                >
+                  Remove Appointment
+                </button>
+                <div>
+                  <label className="block font-semibold mb-2 text-gray-700">
+                    Appointment Date
+                  </label>
+                  <input
+                    type="date"
+                    value={apt.date.split("T")[0]}
+                    onChange={(e) =>
+                      handleAppointmentChange(index, "date", e.target.value)
+                    }
+                    className="w-full p-2 border rounded bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2 text-gray-700">
+                    Appointment Time
+                  </label>
+                  <input
+                    type="time"
+                    value={apt.time[0]}
+                    onChange={(e) =>
+                      handleAppointmentChange(index, "time", [e.target.value])
+                    }
+                    className="w-full p-2 border rounded bg-white"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block font-semibold mb-2 text-gray-700">
-                  Appointment Time
-                </label>
-                <input
-                  type="time"
-                  value={apt.time[0]}
-                  onChange={(e) =>
-                    handleAppointmentChange(index, "time", [e.target.value])
-                  }
-                  className="w-full p-2 border rounded bg-white"
-                />
-              </div>
-            </div>
-          ))}
+            ))
+          )}
+          <button
+            type="button"
+            onClick={addAppointment}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-200"
+          >
+            Add Appointment
+          </button>
         </div>
 
         {/* Payment Details Section */}

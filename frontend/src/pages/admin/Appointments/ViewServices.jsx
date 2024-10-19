@@ -24,17 +24,21 @@ const ServiceDetailsModal = ({ isOpen, onClose, serviceDetails }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg">
         <h2 className="text-lg font-bold mb-4">Service Details</h2>
-        {serviceDetails.length > 0 ? (
-          serviceDetails.map((detail, index) => (
-            <div key={index} className="mb-2">
-              <strong>Service:</strong> {detail.serviceType} <br />
-              <strong>Date:</strong> {detail.date} <br />
-              <strong>Time:</strong> {detail.time}
-            </div>
-          ))
-        ) : (
-          <p>No details available.</p>
-        )}
+        <div className="max-h-60 overflow-y-auto">
+          {" "}
+          {/* Added scrollable area */}
+          {serviceDetails.length > 0 ? (
+            serviceDetails.map((detail, index) => (
+              <div key={index} className="mb-2">
+                <strong>Service:</strong> {detail.serviceType} <br />
+                <strong>Date:</strong> {detail.date} <br />
+                <strong>Time:</strong> {detail.time}
+              </div>
+            ))
+          ) : (
+            <p>No details available.</p>
+          )}
+        </div>
         <button
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           onClick={onClose}
