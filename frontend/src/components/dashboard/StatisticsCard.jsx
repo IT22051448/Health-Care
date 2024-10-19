@@ -1,3 +1,5 @@
+import React from 'react';
+
 const StatisticCard = ({ title, value, percentage, isPositive }) => {
     return (
       <div className="bg-white shadow-sm p-5 rounded-lg flex flex-col gap-2">

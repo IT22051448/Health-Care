@@ -12,7 +12,7 @@ const SalesLineChart = () => {
   const [salesData, setSalesData] = useState(new Array(12).fill(0)); // Initialize sales data for each month
 
   useEffect(() => {
-    dispatch(fetchAllAppointments()); // Fetch all appointments to calculate monthly sales
+    dispatch(fetchAllAppointments());
   }, [dispatch]);
 
   useEffect(() => {

@@ -609,6 +609,7 @@ const appointSlice = createSlice({
       
   },
 });
+console.log(fetchAllAppointments);
 
 export const { clearAppointments } = appointSlice.actions;
 export default appointSlice.reducer;

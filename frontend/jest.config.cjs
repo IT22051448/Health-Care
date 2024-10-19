@@ -2,6 +2,7 @@
 const path = require("path");
 
 module.exports = {
+  
   transform: {
     "^.+\\.[t|j]sx?$": "babel-jest", // Transpile .js, .jsx, .ts, .tsx files
   },
@@ -12,7 +13,16 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/src/$1", // Resolve the alias for src directory
     "\\.(css|less|scss|sass)$": "identity-obj-proxy", // Mock stylesheets
   },
+  
   globals: {
     // Add any global settings you might need
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!axios)" // If necessary, allow specific modules like axios
+  ],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/build/"
+  ],
+  "resolver": undefined
 };
