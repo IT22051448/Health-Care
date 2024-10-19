@@ -12,6 +12,8 @@ import {
   getAllAppointmentsByMonth,
   getAllAppointmentsByYear,
   getPreviousAppointmentsByMonth,
+  deleteCancelledAppointment,
+  deleteAllCancelledAppointments,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -27,12 +29,6 @@ router.put(
   "/reschedule-appointment/:id/:appointmentId",
   updateAppointmentDateTime
 );
-
-// Cancel an appointment
-router.delete("/cancel-appointment/:id/:appointmentId", cancelAppointment);
-
-// Get all cancelled appointments
-router.get("/cancelled-appointments", getCancelledAppointments);
 
 // Get all appointments for the admin
 router.get("/all-appointments", getAllAppointments);
@@ -53,5 +49,17 @@ router.get("/appointments-by-month", getAllAppointmentsByMonth);
 router.get("/appointments-by-year", getAllAppointmentsByYear);
 
 router.get("/previous-appointments-by-month", getPreviousAppointmentsByMonth);
+
+// Cancel an appointment
+router.delete("/cancel-appointment/:id/:appointmentId", cancelAppointment);
+
+// Get all cancelled appointments
+router.get("/cancelled-appointments", getCancelledAppointments);
+
+// Delete a specific cancelled appointment
+router.delete("/delete-cancelled-appointments/:id", deleteCancelledAppointment);
+
+// Delete all cancelled appointments
+router.delete("/delete-cancelled-appointments", deleteAllCancelledAppointments);
 
 export default router;

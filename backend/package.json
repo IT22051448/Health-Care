@@ -27,7 +27,8 @@
     "paypal-rest-sdk": "^1.8.1",
     "pino": "^9.3.2",
     "pino-caller": "^3.4.0",
-    "pino-pretty": "^11.2.2"
+    "pino-pretty": "^11.2.2",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

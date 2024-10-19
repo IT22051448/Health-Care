@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 
+//Schema which stores the CancelledAppointments attributes in the Mongo Database
+
 const cancelledAppointmentSchema = new mongoose.Schema({
   AID: {
     type: String,
     required: true,
   },
-
+  patientName: { type: String, required: true },
   userEmail: {
     type: String,
     required: true,

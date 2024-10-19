@@ -7,10 +7,11 @@ import { useDispatch } from "react-redux";
 import { createAppointment } from "@/redux/appointSlice/appointSlice";
 
 const AppointmentSummary = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const location = useLocation(); // Access the current location
+  const navigate = useNavigate(); // Hook to programmatically navigate
+  const dispatch = useDispatch(); // Redux dispatch function
 
+  // Destructure appointment details from the location state
   const {
     hospital,
     service,
@@ -21,8 +22,9 @@ const AppointmentSummary = () => {
     serviceAmount,
     userEmail,
     AID,
-  } = location.state || {};
+  } = location.state || {}; // Fallback to an empty object
 
+  // State variables for payment method and modal visibility
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentAmount, setPaymentAmount] = useState(
     serviceAmount * appointments.length
@@ -30,8 +32,10 @@ const AppointmentSummary = () => {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
 
+  // Calculate total cost based on government status
   const totalCost = isGovernment ? 0 : paymentAmount;
 
+  // Handle appointment creation and payment
   const handlePayment = async () => {
     if (isGovernment || paymentMethod) {
       const appointmentData = {
@@ -50,6 +54,7 @@ const AppointmentSummary = () => {
       };
 
       try {
+        // Attempt to create the appointment
         const response = await dispatch(
           createAppointment(appointmentData)
         ).unwrap();
@@ -60,6 +65,9 @@ const AppointmentSummary = () => {
           type: "success",
         });
         console.log("Appointment created:", response);
+
+        // Navigate to the scheduled appointments page
+        navigate("/patient/scheduled-appoint");
       } catch (error) {
         console.error("Error creating appointment:", error);
         toast({
@@ -77,13 +85,15 @@ const AppointmentSummary = () => {
     }
   };
 
+  // Handle card payment confirmation
   const handleCardPayment = async () => {
-    setShowCardModal(false);
-    await handlePayment();
+    setShowCardModal(false); // Close the card payment modal
+    await handlePayment(); // Call the payment handler
   };
 
+  // Handle insurance payment confirmation
   const handleInsurancePayment = async () => {
-    setShowInsuranceModal(false);
+    setShowInsuranceModal(false); // Close the insurance payment modal
 
     const appointmentData = {
       hospital,
@@ -102,6 +112,7 @@ const AppointmentSummary = () => {
     };
 
     try {
+      // Attempt to create the appointment with insurance
       const response = await dispatch(
         createAppointment(appointmentData)
       ).unwrap();
@@ -112,6 +123,9 @@ const AppointmentSummary = () => {
         type: "success",
       });
       console.log("Appointment created:", response);
+
+      // Navigate to the scheduled appointments page
+      navigate("/patient/scheduled-appoint");
     } catch (error) {
       console.error("Error creating appointment:", error);
       toast({

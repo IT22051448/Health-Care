@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchAppointments,
+  fetchDoctors,
   rescheduleAppointment,
   cancelAppointment,
 } from "@/redux/appointSlice/appointSlice";
@@ -10,20 +11,26 @@ import RescheduleModal from "@/components/appointComponents/RescheduleModal";
 import CancellationModal from "@/components/appointComponents/CancellationModal";
 
 const ScheduledAppointments = () => {
+  // Setting up initial states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedSubAppointment, setSelectedSubAppointment] = useState(null);
 
   const dispatch = useDispatch();
-  const userEmail = useSelector((state) => state.auth.user?.email);
+  const userEmail = useSelector((state) => state.auth.user?.email); // Get the user's email from the auth state
+
+  // Fetching appointments and doctors
   const appointments =
-    useSelector((state) => state.appointments.appointments) || []; // Ensure it's an array
+    useSelector((state) => state.appointments.appointments) || [];
+  const doctors = useSelector((state) => state.appointments.doctors) || [];
   const loading = useSelector((state) => state.appointments.loading);
 
+  // If email is available, fetch appointments and doctors
   useEffect(() => {
     if (userEmail) {
       dispatch(fetchAppointments(userEmail));
+      dispatch(fetchDoctors());
     } else {
       toast({
         title: "Error",
@@ -33,6 +40,13 @@ const ScheduledAppointments = () => {
     }
   }, [dispatch, userEmail]);
 
+  // Retrieve the doctor's image based on their name
+  const getDoctorImage = (doctorName) => {
+    const doctor = doctors.find((doc) => doc.fullName === doctorName);
+    return doctor ? doctor.image : null;
+  };
+
+  // Set the selected appointment and sub-appointment for rescheduling
   const handleReschedule = (appointment, subAppointment) => {
     setSelectedAppointment(appointment);
     setSelectedSubAppointment({
@@ -42,71 +56,96 @@ const ScheduledAppointments = () => {
     setIsModalOpen(true);
   };
 
+  // Set the selected sub-appointment for cancellation
   const handleCancel = (appointment, subAppointment) => {
     setSelectedSubAppointment({
       ...subAppointment,
       appointmentId: appointment._id,
     });
-    setIsCancellationModalOpen(true);
+    setIsCancellationModalOpen(true); // Open the cancellation modal
   };
 
+  // Handle the logic for confirming a reschedule
   const confirmReschedule = async (newDate, newTimes) => {
     const formattedDate = newDate.split("/").reverse().join("-");
     const appointmentId = selectedAppointment._id;
     const subAppointmentId = selectedSubAppointment._id;
 
-    const action = await dispatch(
-      rescheduleAppointment({
-        appointmentId,
-        subAppointmentId,
-        newDate: formattedDate,
-        newTimes,
-      })
-    );
+    try {
+      const action = await dispatch(
+        rescheduleAppointment({
+          appointmentId,
+          subAppointmentId,
+          newDate: formattedDate,
+          newTimes,
+        })
+      );
 
-    if (rescheduleAppointment.fulfilled.match(action)) {
-      toast({
-        title: "Success",
-        description: "Appointment rescheduled!",
-        type: "success",
-      });
-    } else {
+      if (rescheduleAppointment.fulfilled.match(action)) {
+        // Show success toast if rescheduling is successful
+        toast({
+          title: "Success",
+          description: "Appointment rescheduled!",
+          type: "success",
+        });
+      } else {
+        // Show error toast if rescheduling fails
+        toast({
+          title: "Error",
+          description: "Failed to reschedule appointment.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      // Capture any errors during the rescheduling process
       toast({
         title: "Error",
-        description: "Failed to reschedule appointment.",
+        description: `An error occurred: ${error.message}`,
         type: "error",
       });
     }
     setIsModalOpen(false);
   };
 
+  // Handle the logic for confirming a cancellation
   const confirmCancellation = async (reason, description) => {
     const appointmentId = selectedSubAppointment.appointmentId;
     const subAppointmentId = selectedSubAppointment._id;
 
-    const action = await dispatch(
-      cancelAppointment({
-        appointmentId,
-        subAppointmentId,
-        reason,
-        description,
-      })
-    );
+    try {
+      const action = await dispatch(
+        cancelAppointment({
+          appointmentId,
+          subAppointmentId,
+          reason,
+          description,
+        })
+      );
 
-    if (cancelAppointment.fulfilled.match(action)) {
-      toast({
-        title: "Success",
-        description: "Appointment cancelled successfully!",
-        type: "success",
-      });
-    } else {
+      if (cancelAppointment.fulfilled.match(action)) {
+        // Show success toast if cancellation is successful
+        toast({
+          title: "Success",
+          description: "Appointment cancelled successfully!",
+          type: "success",
+        });
+      } else {
+        // Show error toast if cancellation fails
+        toast({
+          title: "Error",
+          description: "Failed to cancel appointment.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      // Capture any errors during the cancellation process
       toast({
         title: "Error",
-        description: "Failed to cancel appointment.",
+        description: `An error occurred: ${error.message}`,
         type: "error",
       });
     }
-    setIsCancellationModalOpen(false);
+    setIsCancellationModalOpen(false); // Close the cancellation modal
   };
 
   return (
@@ -131,23 +170,37 @@ const ScheduledAppointments = () => {
               <h2 className="text-2xl font-semibold text-blue-600 mb-2">
                 Appointment with {appointment.doctor}
               </h2>
-              <p className="text-gray-700 mb-1">
-                <strong>Hospital:</strong> {appointment.hospital}
-              </p>
-              <p className="text-gray-700 mb-1">
-                <strong>Service:</strong> {appointment.service}
-              </p>
-              <p className="text-gray-700 mb-1">
-                <strong>Payment Method:</strong>{" "}
-                {appointment.payment?.method || "Government Hospital"}
-              </p>
-              <p className="text-gray-700 mb-5">
-                <strong>Payment Status:</strong>{" "}
-                {appointment.payment?.status || "Pending"}
-              </p>
+
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex-grow">
+                  <p className="text-gray-700 mb-1">
+                    <strong>Hospital:</strong> {appointment.hospital}
+                  </p>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Service:</strong> {appointment.service}
+                  </p>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Payment Method:</strong>{" "}
+                    {appointment.payment?.method || "Government Hospital"}
+                  </p>
+                  <p className="text-gray-700 mb-5">
+                    <strong>Payment Status:</strong>{" "}
+                    {appointment.payment?.status || "Pending"}
+                  </p>
+                </div>
+
+                {getDoctorImage(appointment.doctor) && (
+                  <img
+                    src={getDoctorImage(appointment.doctor)}
+                    alt={appointment.doctor}
+                    className="w-32 h-32 rounded-full border-2 border-cyan-600 mb-10"
+                  />
+                )}
+              </div>
 
               {appointment.appointments &&
               appointment.appointments.length > 0 ? (
+                // Check if there are sub-appointments
                 appointment.appointments.map((appt) => (
                   <div key={appt._id} className="mb-4 border p-2 rounded">
                     <p className="text-gray-700 mb-1">
@@ -182,10 +235,10 @@ const ScheduledAppointments = () => {
       {selectedAppointment && selectedSubAppointment && (
         <RescheduleModal
           open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => setIsModalOpen(false)} // Close the modal when requested
           selectedAppointment={selectedAppointment}
           selectedSubAppointment={selectedSubAppointment}
-          onReschedule={confirmReschedule}
+          onReschedule={confirmReschedule} // Function to handle rescheduling
           doctorName={selectedAppointment.doctor}
           hospitalName={selectedAppointment.hospital}
           serviceType={selectedAppointment.service}
@@ -195,8 +248,8 @@ const ScheduledAppointments = () => {
       {selectedSubAppointment && (
         <CancellationModal
           open={isCancellationModalOpen}
-          onClose={() => setIsCancellationModalOpen(false)}
-          onConfirm={confirmCancellation}
+          onClose={() => setIsCancellationModalOpen(false)} // Close the cancellation modal
+          onConfirm={confirmCancellation} // Function to handle cancellation
           appointmentId={selectedSubAppointment.appointmentId}
         />
       )}

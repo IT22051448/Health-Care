@@ -7,15 +7,19 @@ import {
 } from "@/redux/appointSlice/appointSlice";
 import { useNavigate } from "react-router-dom";
 import AppointmentModal from "@/components/appointComponents/AppointmentModal";
+import { useToast } from "@/hooks/use-toast";
 
 const BookAppointments = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { hospitals, servicesData, loading, error } = useSelector(
+  // Selectors to get hospitals, services,
+  const { hospitals, servicesData } = useSelector(
     (state) => state.appointments
   );
 
+  // State variables for managing selected hospital, service, doctor, etc.
   const [selectedHospital, setSelectedHospital] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -29,14 +33,53 @@ const BookAppointments = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Get user information from the Redux state
   const userEmail = useSelector((state) => state.auth.user?.email);
   const AID = useSelector((state) => state.auth.user?.AID);
+  const firstName = useSelector((state) => state.auth.user?.firstname);
+  const lastName = useSelector((state) => state.auth.user?.lastname);
+  const dob = useSelector((state) => state.auth.user?.DOB);
+  const userGender = useSelector((state) => state.auth.user?.gender);
 
+  // Effect to initialize patient details and fetch hospitals/services
   useEffect(() => {
-    dispatch(fetchHospitals());
-    dispatch(fetchServicesData());
-  }, [dispatch]);
+    if (firstName && lastName) {
+      setPatientDetails((prev) => ({
+        ...prev,
+        fullName: `${firstName} ${lastName}`,
+      }));
+    }
 
+    if (dob) {
+      const age = new Date().getFullYear() - new Date(dob).getFullYear();
+      setPatientDetails((prev) => ({
+        ...prev,
+        age,
+      }));
+    }
+
+    if (userGender) {
+      setPatientDetails((prev) => ({
+        ...prev,
+        gender: userGender,
+      }));
+    }
+
+    // Fetch hospitals and services when the component mounts
+    try {
+      dispatch(fetchHospitals());
+      dispatch(fetchServicesData());
+    } catch (error) {
+      console.error("Error fetching hospitals or services:", error);
+      toast({
+        title: "Error",
+        description: "Could not load hospitals or services.",
+        variant: "destructive",
+      });
+    }
+  }, [dispatch, firstName, lastName, dob, userGender]);
+
+  // Event handlers for selecting hospital, service, and doctor
   const handleHospitalChange = (e) => {
     const hospital = e.target.value;
     setSelectedHospital(hospital);
@@ -60,6 +103,7 @@ const BookAppointments = () => {
     fetchAvailableDates(selectedHospital, selectedService, doctorName);
   };
 
+  // Fetch available dates for the selected hospital, service, and doctor
   const fetchAvailableDates = (hospital, service, doctorName) => {
     const doctorServices = servicesData.filter(
       (serviceData) =>
@@ -86,8 +130,60 @@ const BookAppointments = () => {
     setAvailableDates(groupedDates);
   };
 
+  // Handle form submission for booking an appointment
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation: Check if all required fields are filled
+    if (!selectedHospital) {
+      toast({
+        title: "Error",
+        description: "Please select a hospital.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedService) {
+      toast({
+        title: "Error",
+        description: "Please select a service.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedDoctor) {
+      toast({
+        title: "Error",
+        description: "Please select a doctor.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (
+      !patientDetails.fullName ||
+      !patientDetails.age ||
+      !patientDetails.gender
+    ) {
+      toast({
+        title: "Error",
+        description: "Please complete the patient details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validation: Ensure at least one date and time is selected
+    if (selectedAppointments.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one appointment date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     let serviceAmount = 0;
     const isGovernment =
@@ -102,9 +198,16 @@ const BookAppointments = () => {
         serviceAmount = serviceDetails.amount * selectedAppointments.length;
       } catch (error) {
         console.error("Error fetching service amount:", error);
+        toast({
+          title: "Error",
+          description: "Could not fetch service details.",
+          variant: "destructive",
+        });
+        return;
       }
     }
 
+    // Prepare appointment data for submission
     const appointmentData = {
       hospital: selectedHospital,
       service: selectedService,
@@ -117,24 +220,17 @@ const BookAppointments = () => {
       AID: AID || "",
     };
 
+    // If validation passes, proceed with form submission
     console.log("Appointment Data:", appointmentData);
+    toast({
+      title: "Success",
+      description: "Please refer to the Appointment Summary!",
+      style: { background: "green", color: "white" },
+    });
     navigate("/patient/appointment-summary", { state: appointmentData });
   };
 
-  const resetForm = () => {
-    setSelectedAppointments([]);
-    setSelectedHospital("");
-    setSelectedService("");
-    setSelectedDoctor("");
-    setAvailableDates([]);
-    setPatientDetails({
-      fullName: "",
-      age: "",
-      gender: "",
-      description: "",
-    });
-  };
-
+  // Helper function to format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return !isNaN(date.getTime())
@@ -142,6 +238,7 @@ const BookAppointments = () => {
       : "Invalid Date";
   };
 
+  // Filtering services and doctors based on selected hospital and service
   const filteredServices = servicesData
     .filter((service) => service.hospitalName === selectedHospital)
     .flatMap((service) => service.services.map((serv) => serv.serviceType));
@@ -161,7 +258,6 @@ const BookAppointments = () => {
           Book Appointments
         </h1>
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Hospital and Services Section */}
           <div>
             <h2 className="text-xl font-semibold mb-3 text-gray-600">
               Hospital and Service
@@ -240,7 +336,6 @@ const BookAppointments = () => {
             </button>
           </div>
 
-          {/* Appointments Section */}
           {selectedAppointments.length > 0 && (
             <div className="mt-5">
               <h2 className="text-xl font-semibold mb-3 text-gray-600">
@@ -263,7 +358,6 @@ const BookAppointments = () => {
             </div>
           )}
 
-          {/* Patient Details Form */}
           <div className="mt-5">
             <h2 className="text-xl font-semibold mb-3 text-gray-600">
               Patient Details
@@ -274,36 +368,37 @@ const BookAppointments = () => {
             <input
               type="text"
               value={patientDetails.fullName}
-              onChange={(e) =>
-                setPatientDetails({
-                  ...patientDetails,
-                  fullName: e.target.value,
-                })
-              }
-              className="block w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="mt-2">
-            <label className="block mb-1 font-medium text-gray-700">Age</label>
-            <input
-              type="number"
-              value={patientDetails.age}
-              onChange={(e) => {
-                const value = e.target.value;
-                setPatientDetails({
-                  ...patientDetails,
-                  age: value === "" ? "" : Math.max(0, value),
+              readOnly
+              onClick={() => {
+                toast({
+                  title: "Info",
+                  description:
+                    "Full Name cannot be changed, please edit profile if any changes",
+                  style: { background: "white", color: "black" },
                 });
               }}
               className="block w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-          </div>
-
-          <div className="mt-2">
-            <label className="block mb-1 font-medium text-gray-700">
+            <label className="block mb-1 font-medium text-gray-700 mt-2">
+              Age
+            </label>
+            <input
+              type="number"
+              value={patientDetails.age}
+              readOnly
+              onClick={() => {
+                toast({
+                  title: "Info",
+                  description:
+                    "Age cannot be changed, please edit profile if any changes",
+                  style: { background: "white", color: "black" },
+                });
+              }}
+              className="block w-full border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <label className="block mb-1 font-medium text-gray-700 mt-2">
               Gender
             </label>
             <div className="flex space-x-3">
@@ -311,9 +406,9 @@ const BookAppointments = () => {
                 <button
                   key={gender}
                   type="button"
-                  onClick={() =>
-                    setPatientDetails({ ...patientDetails, gender })
-                  }
+                  onClick={() => {
+                    setPatientDetails({ ...patientDetails, gender });
+                  }}
                   className={`flex-1 py-2 border rounded-md text-sm ${
                     patientDetails.gender === gender
                       ? "bg-blue-500 text-white border-blue-600"

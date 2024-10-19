@@ -78,6 +78,29 @@ const userController = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+
+  async scanQRCode(req, res) {
+    try {
+      const user = await User.findOne({ AID: req.body.AID });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      user.lastVisited = new Date();
+      const updatedUser = await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "User visited successfully",
+        user: updatedUser,
+      });
+    } catch (error) {
+      logger.error(error.message);
+    }
+  },
 };
 
 export default userController;

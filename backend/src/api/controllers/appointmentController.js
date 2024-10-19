@@ -169,6 +169,7 @@ export const cancelAppointment = async (req, res) => {
     // Store the canceled appointment in the CancelledAppointment collection
     const cancelledAppointment = new CancelledAppointment({
       AID: appointment.AID,
+      patientName: appointment.patientDetails.fullName,
       userEmail: appointment.userEmail,
       hospital: appointment.hospital,
       service: appointment.service,
@@ -426,3 +427,46 @@ export const getAllAppointmentsByYear = async (req, res) => {
 };
 
 
+
+// Delete a specific cancelled appointment
+export const deleteCancelledAppointment = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const cancelledAppointment =
+      await CancelledAppointment.findByIdAndDelete(id);
+
+    if (!cancelledAppointment) {
+      return res
+        .status(404)
+        .json({ message: "Cancelled appointment not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Cancelled appointment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting cancelled appointment:", error);
+    res.status(500).json({
+      message: "Error deleting cancelled appointment",
+      error: error.message,
+    });
+  }
+};
+
+// Delete all cancelled appointments
+export const deleteAllCancelledAppointments = async (req, res) => {
+  try {
+    await CancelledAppointment.deleteMany({}); // Deletes all cancelled appointments
+
+    res
+      .status(200)
+      .json({ message: "All cancelled appointments deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting all cancelled appointments:", error);
+    res.status(500).json({
+      message: "Error deleting all cancelled appointments",
+      error: error.message,
+    });
+  }
+};

@@ -12,11 +12,18 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
+import { FormLabel } from "../ui/form";
 
 const types = {
   INPUT: "input",
   SELECT: "select",
   TEXTAREA: "textarea",
+  RADIO: "radio",
 };
 
 const CommonForm = ({
@@ -26,6 +33,7 @@ const CommonForm = ({
   onSubmit,
   buttonText,
 }) => {
+  const [selectedDate, setSelectedDate] = useState(null);
   function renderInput(control) {
     let element = null;
     const value = formData[control.name] || "";
@@ -69,6 +77,53 @@ const CommonForm = ({
                 : null}
             </SelectContent>
           </Select>
+        );
+        break;
+
+      case types.RADIO:
+        element = (
+          <RadioGroup
+            value={formData[control.name]}
+            onValueChange={(value) =>
+              setFormData({ ...formData, [control.name]: value })
+            }
+          >
+            {control.options.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <RadioGroupItem value={option.id} id={option.id} />
+                <label htmlFor={option.id}>{option.name}</label>
+              </div>
+            ))}
+          </RadioGroup>
+        );
+        break;
+
+      case types.DATEPICKER:
+        element = (
+          <>
+            <FormLabel>Date of birth</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString()
+                    : "Pick a date"}
+                  <CalendarIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    setSelectedDate(date);
+                    setFormData({ ...formData, [control.name]: date });
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </>
         );
         break;
 

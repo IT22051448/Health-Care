@@ -14,6 +14,7 @@ const initialState = {
   appointmentsByYear: [], // New state for storing appointments by year
   showPopup: false,
   previousAppointmentsByMonth: [],
+  doctors: [],
 };
 
 
@@ -291,6 +292,29 @@ export const getAllAppointmentsByYear = createAsyncThunk(
   }
 );
 
+// This code is used to delete a specific cancelled appointment
+export const deleteCancelledAppointment = createAsyncThunk(
+  "appointments/deleteCancelledAppointment",
+  async (id) => {
+    await axios.delete(
+      `${
+        import.meta.env.VITE_API_URL
+      }appoint/delete-cancelled-appointments/${id}`
+    );
+    return id;
+  }
+);
+
+// This code is used to delete all cancelled appointments
+export const deleteAllCancelledAppointments = createAsyncThunk(
+  "appointments/deleteAllCancelledAppointments",
+  async () => {
+    await axios.delete(
+      `${import.meta.env.VITE_API_URL}appoint/delete-cancelled-appointments`
+    );
+  }
+);
+
 const appointSlice = createSlice({
   name: "appointments",
   initialState,
@@ -467,7 +491,6 @@ const appointSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // Handle deleting an appointment
       .addCase(deleteAppointment.pending, (state) => {
         state.loading = true;
       })
@@ -513,6 +536,56 @@ const appointSlice = createSlice({
         state.servicesData = action.payload;
       })
       .addCase(fetchServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteCancelledAppointment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteCancelledAppointment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cancelledAppointments = state.cancelledAppointments.filter(
+          (appt) => appt._id !== action.payload
+        );
+      })
+      .addCase(deleteCancelledAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      .addCase(deleteAllCancelledAppointments.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAllCancelledAppointments.fulfilled, (state) => {
+        state.loading = false;
+        state.cancelledAppointments = [];
+      })
+      .addCase(deleteAllCancelledAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteCancelledAppointment.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteCancelledAppointment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cancelledAppointments = state.cancelledAppointments.filter(
+          (appt) => appt._id !== action.payload
+        );
+      })
+      .addCase(deleteCancelledAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      .addCase(deleteAllCancelledAppointments.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAllCancelledAppointments.fulfilled, (state) => {
+        state.loading = false;
+        state.cancelledAppointments = [];
+      })
+      .addCase(deleteAllCancelledAppointments.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
