@@ -539,31 +539,7 @@ const appointSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-      .addCase(deleteCancelledAppointment.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteCancelledAppointment.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cancelledAppointments = state.cancelledAppointments.filter(
-          (appt) => appt._id !== action.payload
-        );
-      })
-      .addCase(deleteCancelledAppointment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      .addCase(deleteAllCancelledAppointments.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteAllCancelledAppointments.fulfilled, (state) => {
-        state.loading = false;
-        state.cancelledAppointments = [];
-      })
-      .addCase(deleteAllCancelledAppointments.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
+  
       .addCase(deleteCancelledAppointment.pending, (state) => {
         state.loading = true;
       })
