@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import StatisticCard from '../../../components/dashboard/statisticsCard';
 import SalesLineChart from '../../../components/dashboard/SalesLineChart';
@@ -8,6 +8,9 @@ import Popup from '../../../components/ui/Popup'; // Import the Popup component
 import { fetchDoctors, getAllAppointmentsByMonth, getPreviousAppointmentsByMonth } from "@/redux/appointSlice/appointSlice";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -27,6 +30,71 @@ const Dashboard = () => {
   const [previousServiceCharges, setPreviousServiceCharges] = useState(0);
   const [previousAppointmentCount, setPreviousAppointmentCount] = useState(0);
 
+  const salesChartRef = useRef(null);
+  const doctorsRef = useRef(null);
+  const servicesRef = useRef(null);
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // Add report title
+    doc.setFontSize(18);
+    doc.text('Analytics report', 10, 10);
+    doc.setFontSize(12);
+    
+    if(dataPeriod=="monthly"){
+      doc.text(`For the month: ${selectedMonth} ${selectedYear}`, 10, 20);
+    }
+    else{
+      doc.text(`For the year: ${selectedYear}`, 10, 20);
+    }
+
+    // Add Sales Information
+    doc.setFontSize(14);
+    doc.text('Sales Data:', 10, 30);
+    doc.setFontSize(12);
+    doc.text(`Total Sales: $${totalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 10, 40);
+    doc.text(`Service Charges: $${serviceCharges.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 10, 50);
+    doc.text(`Total Sales Change: ${totalSalesPercentageChange.toFixed(2)}%`, 10, 60);
+    doc.text(`Service Charges Change: ${serviceChargesPercentageChange.toFixed(2)}%`, 10, 70);
+
+    // Capture Sales Chart as Image
+    html2canvas(salesChartRef.current).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      doc.addImage(imgData, 'PNG', 10, 80, 180, 60); // Adjust position and size as needed
+
+      // Add Appointments Information
+      doc.setFontSize(14);
+      doc.text('Appointments Data:', 10, 150);
+      doc.setFontSize(12);
+      doc.text(`Total Appointments: ${appointmentCount}`, 10, 160);
+      doc.text(`Appointment Change: ${appointmentCountPercentageChange.toFixed(2)}%`, 10, 170);
+
+      // Add Doctors Information
+      doc.setFontSize(14);
+      doc.text('Doctors Data:', 10, 180);
+      doc.setFontSize(12);
+      doc.text(`Number of Doctors: ${doctorCount}`, 10, 190);
+
+      // Capture Most Popular Doctors as Image
+      html2canvas(doctorsRef.current).then((canvasDoctors) => {
+        const doctorsImgData = canvasDoctors.toDataURL('image/png');
+        doc.addImage(doctorsImgData, 'PNG', 10, 200, 180, 60); // Adjust position and size as needed
+
+        // Capture Top Services as Image
+        html2canvas(servicesRef.current).then((canvasServices) => {
+          const servicesImgData = canvasServices.toDataURL('image/png');
+          doc.addImage(servicesImgData, 'PNG', 10, 270, 180, 60); // Adjust position and size as needed
+
+          // Save the PDF
+          doc.save('dashboard_report.pdf');
+        });
+      });
+    });
+  };
+
+  
+  
   const handleClosePopup = () => {
     dispatch({ type: 'RESET_POPUP' }); // Reset the popup state
   };
@@ -111,12 +179,12 @@ const Dashboard = () => {
       {showPopup && (
         <Popup message={error} onClose={handleClosePopup} />
       )}
-      <div className="mb-5 flex justify-between items-center">
+      <div className="mb-5 mt-0 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <h1 className="text-3xl font-semibold">Dashboard</h1>
           <p className="text-sm text-gray-500">Here's your analytic details.</p>
         </div>
-
+      <div className="mt-7">
         {/* Dropdown for Monthly/Yearly selection */}
         <Menu as="div" className="relative inline-block text-left">
           <div>
@@ -155,10 +223,9 @@ const Dashboard = () => {
             </div>
           </MenuItems>
         </Menu>
-      </div>
 
-      {/* Year and Month Dropdowns based on Period Selection */}
-      <div className="mb-6">
+        {/* Year and Month Dropdowns based on Period Selection */}
+      <div className="mb-6 mt-2">
         {/* Year Dropdown */}
         <div className="relative inline-block text-left mb-4">
           <Menu as="div" className="relative">
@@ -188,7 +255,7 @@ const Dashboard = () => {
 
         {/* Month Dropdown (only visible if monthly is selected) */}
         {dataPeriod === "monthly" && (
-          <div className="relative inline-block text-left">
+          <div className="relative inline-block text-left ml-2">
             <Menu as="div" className="relative">
               <MenuButton className="inline-flex justify-between w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                 {selectedMonth} <ChevronDownIcon className="-mr-1 h-5 w-5 text-gray-400" />
@@ -215,6 +282,18 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+      <div>
+      <button
+        onClick={generatePDF}
+        className="inline-flex justify-between w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-blue-300 hover:bg-blue-50"
+      >
+        Generate Report
+      </button>
+      </div>
+        </div>
+      </div>
+
+      
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -244,16 +323,20 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Sales Chart */}
-      <div className="bg-white shadow-sm p-5 rounded-lg mb-6">
+       {/* Sales Line Chart (use ref) */}
+       <div ref={salesChartRef} className="bg-white shadow-sm p-5 rounded-lg mb-6">
         <h3 className="text-sm text-gray-500 mb-4">Sales by month</h3>
         <SalesLineChart />
       </div>
 
       {/* Popular Doctors & Best Selling Services */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <MostPopularDoctors />
-        <BestSellingServices />
+        <div ref={doctorsRef}>
+          <MostPopularDoctors />
+        </div>
+        <div ref={servicesRef}>
+          <BestSellingServices />
+        </div>
       </div>
     </div>
   );
