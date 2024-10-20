@@ -13,12 +13,12 @@ export default function PatientDetails() {
   const { scannedPatient, scanResult } = useSelector((state) => state.scan);
   const { appointments } = useSelector((state) => state.appointments);
 
-  console.log(scannedPatient);
+  console.log(scanResult);
   console.log(appointments);
 
   useEffect(() => {
-    dispatch(verifyQR({ scanResult })).then((res) => {
-      console.log(res);
+    dispatch(verifyQR({ patientId: scanResult })).then((res) => {
+      console.log("Scanned user", res);
     });
   }, [dispatch, scanResult]);
 
@@ -26,7 +26,7 @@ export default function PatientDetails() {
     dispatch(fetchAppointments(scannedPatient?.email)).then((res) => {
       console.log("Scanned user appointments", res);
     });
-  }, [dispatch, scannedPatient.email]);
+  }, [dispatch, scannedPatient?.email]);
 
   const handleClick = () => {
     dispatch(resetScanResult());

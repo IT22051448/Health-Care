@@ -131,6 +131,7 @@ const authController = {
       }
 
       if (!user) {
+        logger.error(username, password);
         return res
           .status(400)
           .json({ sucess: false, message: "User not found" });

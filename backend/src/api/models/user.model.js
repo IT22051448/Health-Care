@@ -54,7 +54,6 @@ const userSchema = new mongoose.Schema({
   },
   QRCodeUrl: {
     type: String,
-    required: true,
   },
   lastVisited: {
     type: Date,

@@ -81,7 +81,13 @@ const userController = {
 
   async scanQRCode(req, res) {
     try {
-      const user = await User.findOne({ AID: req.body.AID });
+      const { AID } = req.body;
+
+      if (!AID) {
+        return res.status(400).json({ success: false, message: "Invalid AID" });
+      }
+
+      const user = await User.findOne({ AID: AID });
 
       if (!user) {
         return res
