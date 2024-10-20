@@ -28,11 +28,11 @@ const ViewCancelledAppointments = () => {
       try {
         await dispatch(fetchCancelledAppointments()).unwrap(); // Fetch cancelled appointments
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load cancelled appointments.",
-          style: { background: "red", color: "white" },
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to load cancelled appointments.",
+        //   style: { background: "red", color: "white" },
+        // });
       }
     };
     fetchData();

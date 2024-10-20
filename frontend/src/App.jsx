@@ -25,11 +25,15 @@ import EditService from "./pages/admin/Appointments/EditServices";
 import OngoingAppointments from "./pages/admin/Appointments/OngoingAppointments";
 import UpdateOngoingAppointments from "./pages/admin/Appointments/UpdateOngoingAppointments";
 
+import AboutUs from "./pages/customer/home/aboutUs";
+import ContactUs from "./pages/customer/home/contactUs";
+
 import DocList from "./pages/admin/doctors/docList";
 import HospitalList from "./pages/admin/hospitals/hospitalList";
 import MedServices from "./pages/admin/medServices/MedServices";
 import DoctorProfile from "./pages/admin/doctors/DoctorProfile";
 import CheckIn from "./pages/admin/checkin/CheckIn";
+
 function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -100,6 +104,8 @@ function App() {
           <Route path="appointment" element={<BookAppointments />} />
           <Route path="appointment-summary" element={<AppointmentSummary />} />
           <Route path="scheduled-appoint" element={<ScheduledAppointments />} />
+          <Route path="about-us" element={<AboutUs />} />
+          <Route path="contact-us" element={<ContactUs />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />
