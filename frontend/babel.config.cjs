@@ -8,5 +8,6 @@ module.exports = {
     "@babel/plugin-transform-runtime", // Optimize runtime code
     "@babel/plugin-proposal-class-properties", // Support class properties
     "@babel/plugin-syntax-import-meta", // Support import.meta
+    "babel-plugin-transform-vite-meta-env"
   ],
 };
