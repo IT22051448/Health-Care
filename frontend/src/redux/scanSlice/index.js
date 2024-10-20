@@ -7,6 +7,7 @@ const initialState = {
   loading: false,
   error: null,
   scannedPatient: null,
+  userAppointments: [],
 };
 
 export const verifyQR = createAsyncThunk(
@@ -24,6 +25,19 @@ export const verifyQR = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       }
+    );
+    return response.data;
+  }
+);
+
+export const fetchAppointments = createAsyncThunk(
+  "appointments/fetchAppointments",
+  async (userEmail) => {
+    const response = await axios.get(
+      `${
+        import.meta.env.VITE_API_URL
+      }appoint/scheduled-appointments?userEmail=${userEmail}`,
+      { withCredentials: true }
     );
     return response.data;
   }
@@ -53,6 +67,17 @@ const scanSlice = createSlice({
       .addCase(verifyQR.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchAppointments.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAppointments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userAppointments = action.payload;
+      })
+      .addCase(fetchAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
       });
   },
 });

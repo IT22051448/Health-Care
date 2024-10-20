@@ -5,16 +5,16 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import img from "@/assets/doctor.jpg";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { fetchAppointments } from "@/redux/appointSlice/appointSlice";
+import { fetchAppointments } from "@/redux/scanSlice";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
 
   const { scannedPatient, scanResult } = useSelector((state) => state.scan);
-  const { appointments } = useSelector((state) => state.appointments);
+  const { userAppointments } = useSelector((state) => state.scan);
 
   console.log(scanResult);
-  console.log(appointments);
+  console.log(userAppointments);
 
   useEffect(() => {
     dispatch(verifyQR({ patientId: scanResult })).then((res) => {
@@ -24,13 +24,15 @@ export default function PatientDetails() {
 
   useEffect(() => {
     dispatch(fetchAppointments(scannedPatient?.email)).then((res) => {
-      console.log("Scanned user appointments", res);
+      console.log("Appointments", res);
     });
   }, [dispatch, scannedPatient?.email]);
 
   const handleClick = () => {
     dispatch(resetScanResult());
   };
+
+  console.log(userAppointments.length);
 
   return (
     <div className="flex flex-col items-center p-6 bg-gray-100  space-y-6 px-6">
@@ -58,12 +60,13 @@ export default function PatientDetails() {
       <Card className="w-full bg-white shadow-md">
         <CardContent>
           <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
-          <div className="mt-4 p-4 bg-gray-100 rounded-md">
+          {/* <div className="mt-4 p-4 bg-gray-100 rounded-md">
             <p className="text-md font-medium">Emergency Cardiac Care</p>
             <p>Date: 05/10/2024</p>
             <p>Time: 10:00 AM</p>
             <p>Service Amount: Rs. 20,000.00</p>
-          </div>
+          </div> */}
+          {userAppointments.length === 0 && <p>No appointments found</p>}
         </CardContent>
       </Card>
 
