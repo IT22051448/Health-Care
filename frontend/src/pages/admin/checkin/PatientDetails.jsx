@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { resetScanResult, verifyQR } from "@/redux/scanSlice";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import img from "@/assets/doctor.jpg";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import img from "@/assets/profile.png";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { fetchAppointments } from "@/redux/scanSlice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { calculateAge } from "@/utils";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
@@ -35,6 +36,12 @@ export default function PatientDetails() {
 
   console.log(userAppointments.length);
 
+  const age = scannedPatient?.DOB ? calculateAge(scannedPatient?.DOB) : "N/A";
+
+  const pendingPayments = userAppointments.filter(
+    (appointment) => appointment.payment?.status !== "completed"
+  );
+
   return (
     <div className="flex flex-col items-center p-6 bg-gray-100  space-y-6 px-6">
       <Card className="w-full  bg-white shadow-md">
@@ -60,24 +67,111 @@ export default function PatientDetails() {
         </TabsList>
 
         <TabsContent value="personalDetails">
-          <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
-            <p>Here is the content for personal details.</p>
-          </div>
+          <Card className="w-full bg-white shadow-md p-4">
+            <CardHeader>
+              <CardTitle>Personal Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>
+                <strong>First Name:</strong>{" "}
+                {scannedPatient?.firstname || "N/A"}
+              </p>
+              <p>
+                <strong>Last Name:</strong> {scannedPatient?.lastname || "N/A"}
+              </p>
+              <p>
+                <strong>Joined Date:</strong>{" "}
+                {formatDate(scannedPatient?.created_date) || "N/A"}
+              </p>
+              <p>
+                <strong>Age:</strong> {age}
+              </p>
+              <p>
+                <strong>Last Visited:</strong>{" "}
+                {formatDate(scannedPatient?.lastVisited) || "N/A"}
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="appointments">
-          <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Appointments</h2>
-            <p>Here is the content for appointments.</p>
-          </div>
+          <Card className="w-full bg-white shadow-md p-4">
+            <CardHeader>
+              <CardTitle>Appointments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {userAppointments.length === 0 ? (
+                <p>No appointments found</p>
+              ) : (
+                <table className="min-w-full bg-white border">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">AID</th>
+                      <th className="py-2 px-4 border-b">Hospital</th>
+                      <th className="py-2 px-4 border-b">Service</th>
+                      <th className="py-2 px-4 border-b">Doctor</th>
+                      <th className="py-2 px-4 border-b">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userAppointments.map((appointment, index) => (
+                      <tr key={index}>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.aid}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.hospital}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.service}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.doctor}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.payment?.amount || "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="payments">
-          <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Payments</h2>
-            <p>Here is the content for payments.</p>
-          </div>
+          <Card className="w-full bg-white shadow-md p-4">
+            <CardHeader>
+              <CardTitle>Pending Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {pendingPayments.length === 0 ? (
+                <p>No pending payments found</p>
+              ) : (
+                <table className="min-w-full bg-white border">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Appointment ID</th>
+                      <th className="py-2 px-4 border-b">Amount Due</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingPayments.map((appointment, index) => (
+                      <tr key={index}>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.aid}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                          {appointment.payment?.amount || "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
