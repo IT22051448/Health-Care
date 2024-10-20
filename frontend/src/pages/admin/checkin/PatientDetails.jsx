@@ -43,7 +43,7 @@ export default function PatientDetails() {
     dispatch(resetScanResult());
   };
 
-  console.log(userAppointments.length);
+  console.log(userAppointments?.length);
 
   const age = scannedPatient?.DOB ? calculateAge(scannedPatient?.DOB) : "N/A";
 
