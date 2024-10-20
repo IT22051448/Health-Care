@@ -6,6 +6,7 @@ import img from "@/assets/doctor.jpg";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { fetchAppointments } from "@/redux/scanSlice";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
@@ -51,11 +52,34 @@ export default function PatientDetails() {
         </CardHeader>
       </Card>
 
-      <div className="flex justify-between w-full ">
-        <Button variant="outline">Personal Details</Button>
-        <Button variant="outline">Appointments</Button>
-        <Button variant="outline">Payments</Button>
-      </div>
+      <Tabs defaultValue="personalDetails" className="w-full">
+        <TabsList className="flex justify-between w-full">
+          <TabsTrigger value="personalDetails">Personal Details</TabsTrigger>
+          <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="personalDetails">
+          <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
+            <p>Here is the content for personal details.</p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="appointments">
+          <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">Appointments</h2>
+            <p>Here is the content for appointments.</p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">Payments</h2>
+            <p>Here is the content for payments.</p>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Card className="w-full bg-white shadow-md">
         <CardContent>
