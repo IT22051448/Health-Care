@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import QrScanner from "qr-scanner";
 import { useDispatch } from "react-redux";
-import { setScanResult } from "@/redux/scanSlice";
+import { setScanResult, verifyQR } from "@/redux/scanSlice";
 
 const QRCodeScanner = () => {
   const scanner = useRef();

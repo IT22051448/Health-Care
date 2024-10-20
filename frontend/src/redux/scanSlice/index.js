@@ -12,8 +12,9 @@ const initialState = {
 export const verifyQR = createAsyncThunk(
   "/api/user/verifyQR",
   async ({ patientId }, { getState }) => {
+    console.log("Scan Slide: ", patientId);
     const { token } = getState().auth;
-    const response = await axios.put(
+    const response = await axios.post(
       `${import.meta.env.VITE_API_URL}users/scanQR`,
       {
         AID: patientId,
@@ -37,6 +38,7 @@ const scanSlice = createSlice({
     },
     resetScanResult: (state) => {
       state.scanResult = null;
+      state.scannedPatient = null;
     },
   },
   extraReducers: (builder) => {

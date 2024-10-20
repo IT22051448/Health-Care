@@ -4,6 +4,7 @@ import { loginFormControls } from "@/config";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "@/redux/authSlice";
+import { useToast } from "@/hooks/use-toast";
 
 const initialState = {
   username: "",
@@ -13,6 +14,8 @@ const initialState = {
 const AuthLogin = () => {
   const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
+
+  const { toast } = useToast();
 
   function onSubmit(event) {
     event.preventDefault();
@@ -24,6 +27,10 @@ const AuthLogin = () => {
           console.log("Login successful", result.payload.user);
         } else {
           console.error("Login failed");
+          toast({
+            title: "Invalid user name or password",
+            variant: "destructive",
+          });
         }
       })
       .catch(() => {
