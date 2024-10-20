@@ -27,6 +27,7 @@ import UpdateOngoingAppointments from "./pages/admin/Appointments/UpdateOngoingA
 
 import AboutUs from "./pages/customer/home/aboutUs";
 import ContactUs from "./pages/customer/home/contactUs";
+import HealthPackages from "./pages/customer/home/healthPackages";
 
 import DocList from "./pages/admin/doctors/docList";
 import HospitalList from "./pages/admin/hospitals/hospitalList";
@@ -106,6 +107,7 @@ function App() {
           <Route path="scheduled-appoint" element={<ScheduledAppointments />} />
           <Route path="about-us" element={<AboutUs />} />
           <Route path="contact-us" element={<ContactUs />} />
+          <Route path="health-package" element={<HealthPackages />} />
         </Route>
         <Route path="*" element={<NotFound />} />
         <Route path="/unauth-page" element={<UnAuthPage />} />
