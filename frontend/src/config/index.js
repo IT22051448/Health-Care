@@ -38,6 +38,7 @@ export const resigterFormControls = [
         name: "Male",
       },
       { id: "female", name: "Female" },
+      { id: "other", name: "Other" },
     ],
   },
   {
