@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { fetchAppointments } from "@/redux/scanSlice";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { calculateAge } from "@/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import UpcomingAppointmentsCard from "./UpcomingAppointmentsCard";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
@@ -38,8 +47,18 @@ export default function PatientDetails() {
 
   const age = scannedPatient?.DOB ? calculateAge(scannedPatient?.DOB) : "N/A";
 
-  const pendingPayments = userAppointments.filter(
-    (appointment) => appointment.payment?.status !== "completed"
+  const pendingPayments = userAppointments.flatMap((appointment) =>
+    appointment.appointments
+      .filter((appt) => appointment.payment?.status !== "Completed") // Check payment status for each appointment
+      .map((appt) => ({
+        aid: appointment.AID,
+        hospital: appointment.hospital,
+        service: appointment.service,
+        doctor: appointment.doctor,
+        payment: appointment.payment,
+        date: appt.date, // Correctly referencing 'appt'
+        time: appt.time,
+      }))
   );
 
   return (
@@ -103,38 +122,56 @@ export default function PatientDetails() {
               {userAppointments.length === 0 ? (
                 <p>No appointments found</p>
               ) : (
-                <table className="min-w-full bg-white border">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b">AID</th>
-                      <th className="py-2 px-4 border-b">Hospital</th>
-                      <th className="py-2 px-4 border-b">Service</th>
-                      <th className="py-2 px-4 border-b">Doctor</th>
-                      <th className="py-2 px-4 border-b">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userAppointments.map((appointment, index) => (
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b">
-                          {appointment.aid}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {appointment.hospital}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {appointment.service}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {appointment.doctor}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {appointment.payment?.amount || "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <Table className="min-w-full bg-white border">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="py-2 px-4 border-b">AID</TableHead>
+                      <TableHead className="py-2 px-4 border-b">
+                        Hospital
+                      </TableHead>
+                      <TableHead className="py-2 px-4 border-b">
+                        Service
+                      </TableHead>
+                      <TableHead className="py-2 px-4 border-b">
+                        Doctor
+                      </TableHead>
+                      <TableHead className="py-2 px-4 border-b">
+                        Amount
+                      </TableHead>
+                      <TableHead className="py-2 px-4 border-b">Date</TableHead>
+                      <TableHead className="py-2 px-4 border-b">Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {userAppointments.flatMap((appointment) =>
+                      appointment.appointments.map((appt) => (
+                        <TableRow key={appt._id}>
+                          <TableCell className="py-2 border-b">
+                            {appointment.AID}
+                          </TableCell>
+                          <TableCell className="py-2 border-b">
+                            {appointment.hospital}
+                          </TableCell>
+                          <TableCell className="py-2 border-b">
+                            {appointment.service}
+                          </TableCell>
+                          <TableCell className="py-2 border-b">
+                            {appointment.doctor}
+                          </TableCell>
+                          <TableCell className="py-2 px-2 border-b">
+                            {appointment.payment?.amount || "N/A"}
+                          </TableCell>
+                          <TableCell className="py-2 px-2 border-b">
+                            {new Date(appt.date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="py-2 px-2 border-b">
+                            {appt.time.join(", ")}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
@@ -149,26 +186,30 @@ export default function PatientDetails() {
               {pendingPayments.length === 0 ? (
                 <p>No pending payments found</p>
               ) : (
-                <table className="min-w-full bg-white border">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b">Appointment ID</th>
-                      <th className="py-2 px-4 border-b">Amount Due</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table className="min-w-full bg-white border">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="py-2 px-4 border-b">
+                        Appointment ID
+                      </TableHead>
+                      <TableHead className="py-2 px-4 border-b">
+                        Amount Due
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {pendingPayments.map((appointment, index) => (
-                      <tr key={index}>
-                        <td className="py-2 px-4 border-b">
+                      <TableRow key={index}>
+                        <TableCell className="py-2 px-4 border-b">
                           {appointment.aid}
-                        </td>
-                        <td className="py-2 px-4 border-b">
+                        </TableCell>
+                        <TableCell className="py-2 px-4 border-b">
                           {appointment.payment?.amount || "N/A"}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
@@ -176,16 +217,7 @@ export default function PatientDetails() {
       </Tabs>
 
       <Card className="w-full bg-white shadow-md">
-        <CardContent>
-          <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
-          {/* <div className="mt-4 p-4 bg-gray-100 rounded-md">
-            <p className="text-md font-medium">Emergency Cardiac Care</p>
-            <p>Date: 05/10/2024</p>
-            <p>Time: 10:00 AM</p>
-            <p>Service Amount: Rs. 20,000.00</p>
-          </div> */}
-          {userAppointments.length === 0 && <p>No appointments found</p>}
-        </CardContent>
+        <UpcomingAppointmentsCard userAppointments={userAppointments} />
       </Card>
 
       <Button onClick={handleClick}>Reset</Button>
