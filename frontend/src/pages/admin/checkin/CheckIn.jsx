@@ -1,4 +1,3 @@
-import { set } from "date-fns";
 import QRCodeScanner from "./QRCodeScanner";
 import PatientDetails from "./PatientDetails";
 import { useSelector } from "react-redux";

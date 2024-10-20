@@ -42,7 +42,7 @@ const HeaderRightContent = () => {
           <DropdownMenuLabel>{`Logged in as ${user.username}`}</DropdownMenuLabel>
 
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => navigate("/shop/profile")}>
+          <DropdownMenuItem onClick={() => navigate("/patient/profile")}>
             <User className="mr-2 h-4 w-4" />
             Profile
           </DropdownMenuItem>
