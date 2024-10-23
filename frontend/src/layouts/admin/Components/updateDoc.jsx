@@ -24,8 +24,8 @@ const UpdateDoctorModal = ({ isOpen, onClose, doctor, onUpdate }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUpdate(formData); // Send updated form data to parent component
-    onClose(); // Close the modal after submission
+    onUpdate(formData); 
+    onClose(); 
   };
 
   if (!isOpen) return null;

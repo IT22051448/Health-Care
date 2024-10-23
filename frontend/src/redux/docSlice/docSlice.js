@@ -4,11 +4,11 @@ import axios from "axios";
 // Thunk to create a new doctor
 export const addDoctor = createAsyncThunk(
   "doctor/createDoctor",
-  async (formdata, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         "http://localhost:3000/api/doctor/create-doctor",
-        formdata,
+        formData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -25,11 +25,11 @@ export const addDoctor = createAsyncThunk(
 // Thunk to update an existing doctor
 export const updateDoctor = createAsyncThunk(
   "doctor/updateDoctor",
-  async ({ doctorId, formdata }, { rejectWithValue }) => {
+  async ({ doctorId, formData }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
         `http://localhost:3000/api/doctor/update-doctor/${doctorId}`,
-        formdata,
+        formData,
         {
           headers: {
             "Content-Type": "application/json",

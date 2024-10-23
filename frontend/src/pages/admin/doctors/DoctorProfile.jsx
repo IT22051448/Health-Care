@@ -37,7 +37,7 @@ function DoctorProfile() {
       .unwrap()
       .then(() => {
         console.log(`Profile for ${doctor.fullName} updated successfully.`);
-        // Optionally, you can refresh the profile data here
+       
       })
       .catch((error) => {
         console.error("Error updating doctor profile:", error);
